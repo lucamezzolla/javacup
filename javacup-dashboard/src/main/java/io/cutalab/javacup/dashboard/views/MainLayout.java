@@ -41,6 +41,7 @@ public class MainLayout extends AppLayout {
         navigation.addItem(new SideNavItem("Dashboard", MainView.class));
         navigation.addItem(new SideNavItem("Processes", ProcessesView.class));
         navigation.addItem(new SideNavItem("Current JVM Metrics", CurrentJvmMetricsView.class));
+        navigation.addItem(new SideNavItem("Metric Samples", MetricSamplesView.class));
 
         Scroller scroller = new Scroller(navigation);
         addToDrawer(scroller);

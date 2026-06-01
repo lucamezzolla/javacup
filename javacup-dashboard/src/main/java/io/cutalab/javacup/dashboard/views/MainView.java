@@ -30,8 +30,9 @@ public class MainView extends VerticalLayout {
 
         Button processesButton = new Button("Open processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button metricsButton = new Button("Open current JVM metrics", event -> getUI().ifPresent(ui -> ui.navigate("metrics/current")));
+        Button samplesButton = new Button("Open metric samples", event -> getUI().ifPresent(ui -> ui.navigate("metrics/samples")));
 
-        HorizontalLayout actions = new HorizontalLayout(processesButton, metricsButton);
+        HorizontalLayout actions = new HorizontalLayout(processesButton, metricsButton, samplesButton);
 
         add(title, tagline, description, currentMilestone, stepDescription, actions);
     }
