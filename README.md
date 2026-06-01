@@ -27,6 +27,7 @@ External JVM monitoring is not enabled yet. The next technical milestone is to i
 - Shared application layout with sidebar navigation
 - Local Java process discovery through the Java `ProcessHandle` API
 - Process filtering by PID, application name, type, command or arguments
+- Compact process table with shortened arguments and tooltip details
 - Self-process detection
 - Process detail page placeholder at `/processes/{pid}`
 - Current JVM memory metrics for the Javacup process
@@ -158,6 +159,7 @@ The project is organized as a Maven multi-module application.
 javacup/
   javacup-core/
   javacup-dashboard/
+  javacup-demo-apps/
   docs/
   scripts/
 ```
@@ -168,6 +170,7 @@ Current modules:
 | --- | --- |
 | `javacup-core` | Shared models and core data structures |
 | `javacup-dashboard` | Spring Boot and Vaadin local dashboard |
+| `javacup-demo-apps` | Small demo application for process discovery and memory behavior experiments |
 
 Planned modules:
 

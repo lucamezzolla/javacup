@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -17,6 +18,8 @@ import java.util.List;
 
 @Route(value = "processes", layout = MainLayout.class)
 public class ProcessesView extends VerticalLayout {
+
+    private static final int ARGUMENTS_PREVIEW_LENGTH = 90;
 
     private final LocalJavaProcessService processService;
     private final Grid<JavaProcessInfo> grid = new Grid<>(JavaProcessInfo.class, false);
@@ -56,41 +59,77 @@ public class ProcessesView extends VerticalLayout {
     }
 
     private void configureGrid() {
+        grid.setSizeFull();
+
         grid.addColumn(JavaProcessInfo::pid)
                 .setHeader("PID")
-                .setAutoWidth(true)
+                .setWidth("90px")
                 .setFlexGrow(0);
 
         grid.addColumn(JavaProcessInfo::applicationName)
                 .setHeader("Application")
-                .setAutoWidth(true)
+                .setWidth("260px")
                 .setFlexGrow(0);
 
         grid.addColumn(JavaProcessInfo::processType)
                 .setHeader("Type")
-                .setAutoWidth(true)
+                .setWidth("150px")
                 .setFlexGrow(0);
 
         grid.addColumn(JavaProcessInfo::displayName)
                 .setHeader("Command")
-                .setAutoWidth(true)
+                .setWidth("110px")
                 .setFlexGrow(0);
 
-        grid.addColumn(JavaProcessInfo::argumentsAsText)
+        grid.addComponentColumn(this::argumentsPreview)
                 .setHeader("Arguments")
-                .setAutoWidth(true)
                 .setFlexGrow(1);
 
-        grid.addComponentColumn(process -> new Button(process.currentProcess() ? "Self metrics" : "Open details", event -> {
-                    if (process.currentProcess()) {
-                        getUI().ifPresent(ui -> ui.navigate("metrics/current"));
-                    } else {
-                        getUI().ifPresent(ui -> ui.navigate("processes/" + process.pid()));
-                    }
-                }))
+        grid.addComponentColumn(this::actionButton)
                 .setHeader("Action")
-                .setAutoWidth(true)
+                .setWidth("140px")
                 .setFlexGrow(0);
+    }
+
+    private Span argumentsPreview(JavaProcessInfo process) {
+        String arguments = process.argumentsAsText();
+        String preview = abbreviate(arguments, ARGUMENTS_PREVIEW_LENGTH);
+
+        Span span = new Span(preview.isBlank() ? "—" : preview);
+        span.getStyle()
+                .set("display", "block")
+                .set("max-width", "100%")
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis")
+                .set("white-space", "nowrap");
+
+        if (!arguments.isBlank()) {
+            span.getElement().setAttribute("title", arguments);
+        }
+
+        return span;
+    }
+
+    private Button actionButton(JavaProcessInfo process) {
+        return new Button(process.currentProcess() ? "Self metrics" : "Open details", event -> {
+            if (process.currentProcess()) {
+                getUI().ifPresent(ui -> ui.navigate("metrics/current"));
+            } else {
+                getUI().ifPresent(ui -> ui.navigate("processes/" + process.pid()));
+            }
+        });
+    }
+
+    private String abbreviate(String value, int maxLength) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        if (value.length() <= maxLength) {
+            return value;
+        }
+
+        return value.substring(0, Math.max(0, maxLength - 1)) + "…";
     }
 
     private void refresh() {
