@@ -30,6 +30,7 @@ External JVM monitoring is not enabled yet. The next technical milestone is to i
 - Compact process table with shortened arguments and tooltip details
 - Self-process detection
 - Process detail page placeholder at `/processes/{pid}`
+- Local access probe for selected Java processes using `jcmd`
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
 - Current JVM class loading metrics
@@ -199,6 +200,10 @@ Local process discovery currently uses:
 
 - `ProcessHandle`
 - `ProcessHandle.Info`
+
+Selected process access can currently be probed with:
+
+- local JDK `jcmd` access probe
 
 Reading metrics from an external Java process will require a later milestone based on one or more of:
 
