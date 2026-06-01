@@ -1,6 +1,11 @@
-# Javacup
+# Javacup ☕
 
 **A friendly JVM memory doctor for Java developers.**
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
+
+> If you find Javacup useful or want to support its development, you can make a small donation through PayPal.  
+> Your support helps improve documentation, testing, safety checks, UI polish and controlled production-readiness.
 
 Javacup is a local-first JVM diagnostic tool designed to help Java developers understand memory behavior, garbage collection trends and suspicious growth patterns through a clean Vaadin dashboard and readable reports.
 
@@ -12,10 +17,18 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 ## Project status
 
-Javacup is currently in early development.
+Javacup is **under active construction**.
 
-The current version is a local development preview running on a Vaadin dashboard.
-It already provides process discovery, current JVM metrics and in-memory metric sampling for the Javacup process itself.
+This repository currently contains an early development preview. The application already runs locally and includes useful building blocks, but it is not production-ready yet.
+
+Current focus:
+
+- stable local dashboard;
+- Java process discovery;
+- safe external process probing;
+- controlled demo applications;
+- clean UI foundations;
+- readable documentation.
 
 External JVM monitoring is being introduced progressively. Javacup can currently run basic local `jcmd` probes against a selected Java process, including VM version, heap information and VM uptime.
 
@@ -25,11 +38,13 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 
 - Local Vaadin dashboard running on `127.0.0.1:8787`
 - Shared application layout with sidebar navigation and branded header styling
+- Compact Javacup header with coffee icon
 - Local Java process discovery through the Java `ProcessHandle` API
 - Process filtering by PID, application name, type, command or arguments
-- Compact process table with shortened arguments and tooltip details
+- Compact process table with shortened arguments and native browser hint details
 - Self-process detection
-- Process detail page placeholder at `/processes/{pid}`
+- Process detail page at `/processes/{pid}`
+- Wrapped process arguments in the process detail page
 - Local access probe for selected Java processes using `jcmd`
 - Raw external heap information probe through `jcmd GC.heap_info`
 - Raw external VM uptime probe through `jcmd VM.uptime`
@@ -39,6 +54,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - Current JVM garbage collection metrics
 - In-memory JVM metric sampling every 2 seconds
 - Recent metric samples table
+- Demo memory application with normal, burst and intentional leak modes
 
 ---
 
@@ -48,7 +64,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 | --- | --- |
 | `/` | Dashboard home |
 | `/processes` | Local Java process discovery and filtering |
-| `/processes/{pid}` | Selected process detail placeholder |
+| `/processes/{pid}` | Selected process detail and local `jcmd` probes |
 | `/metrics/current` | Current JVM metrics for the Javacup process |
 | `/metrics/samples` | Recent in-memory JVM metric samples |
 
@@ -135,6 +151,41 @@ This is intentional: Javacup is designed to be local-first and should not be exp
 
 ---
 
+## Demo applications
+
+Javacup includes a small demo application that can be used to test process discovery and future memory monitoring features.
+
+Run a normal Java process:
+
+```bash
+./scripts/run-demo-normal.sh
+```
+
+Run a process with temporary allocation bursts:
+
+```bash
+./scripts/run-demo-burst.sh
+```
+
+Run a process with intentional retained memory growth:
+
+```bash
+./scripts/run-demo-leak.sh
+```
+
+The leak demo runs with `-Xmx256m` and intentionally retains memory chunks.
+It is only meant for local testing.
+
+After starting one of these scripts, open:
+
+```text
+http://127.0.0.1:8787/processes
+```
+
+You should see the demo JAR as a separate Java process.
+
+---
+
 ## Development workflow
 
 The project currently uses the `development` branch as the active working branch.
@@ -183,7 +234,6 @@ javacup-analyzer
 javacup-report
 javacup-storage
 javacup-agent
-javacup-demo-apps
 ```
 
 ---
@@ -206,12 +256,15 @@ Local process discovery currently uses:
 Selected process access can currently be probed with:
 
 - local JDK `jcmd` access probe
+- `jcmd <pid> VM.version`
+- `jcmd <pid> GC.heap_info`
+- `jcmd <pid> VM.uptime`
 
-Reading metrics from an external Java process will require a later milestone based on one or more of:
+Reading structured metrics from an external Java process will require a later milestone based on one or more of:
 
 - local JMX
 - Attach API
-- `jcmd` fallback
+- `jcmd` output parsing
 - optional Java Agent
 
 ---
@@ -226,6 +279,7 @@ Reading metrics from an external Java process will require a later milestone bas
 - Basic JVM memory metrics
 - GC and thread metrics
 - In-memory metric sampling
+- External process access probes
 - First diagnostic warnings
 - HTML/JSON report export
 - Demo applications with controlled leaks
@@ -235,6 +289,7 @@ Reading metrics from an external Java process will require a later milestone bas
 - Safe local attach/JMX investigation
 - Connect to a selected Java process
 - Read memory, GC and thread metrics from the selected process
+- Parse selected `jcmd` outputs into structured metrics
 - Handle permission and compatibility errors clearly
 - Add monitoring session concept
 
@@ -268,6 +323,16 @@ By default:
 - diagnostic data stays on the local machine.
 
 Future export and upload features should include clear user consent and report sanitization options.
+
+---
+
+## Support the project
+
+If Javacup helps you or you want to support its development, you can make a small donation through PayPal:
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
+
+Every contribution helps improve documentation, testing, safety checks, UI polish and controlled production-readiness.
 
 ---
 
