@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Heap trend chart labels for external samples.
 - Lightweight heap usage trend chart for external samples.
 - Apache License 2.0.
 - Local Vaadin dashboard running on `127.0.0.1:8787`.

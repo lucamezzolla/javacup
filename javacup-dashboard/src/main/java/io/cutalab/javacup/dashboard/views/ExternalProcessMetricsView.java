@@ -424,11 +424,48 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             return;
         }
 
+        long minHeapUsed = visibleSamples.stream()
+                .map(ExternalMetricSample::heapUsedMb)
+                .filter(value -> value != null)
+                .min(Long::compareTo)
+                .orElse(0L);
+
         long maxHeapUsed = visibleSamples.stream()
                 .map(ExternalMetricSample::heapUsedMb)
                 .filter(value -> value != null)
                 .max(Long::compareTo)
                 .orElse(1L);
+
+        long latestHeapUsed = visibleSamples.get(visibleSamples.size() - 1).heapUsedMb();
+
+        Span yAxisLabel = new Span("Y: Heap used (MB)");
+        yAxisLabel.getStyle()
+                .set("display", "block")
+                .set("font-weight", "600")
+                .set("margin-bottom", "var(--lumo-space-xs)");
+
+        HorizontalLayout chartRow = new HorizontalLayout();
+        chartRow.setPadding(false);
+        chartRow.setSpacing(false);
+        chartRow.setWidthFull();
+        chartRow.setAlignItems(Alignment.STRETCH);
+        chartRow.getStyle().set("gap", "var(--lumo-space-s)");
+
+        VerticalLayout yScale = new VerticalLayout();
+        yScale.setPadding(false);
+        yScale.setSpacing(false);
+        yScale.setWidth("80px");
+        yScale.setHeight("140px");
+        yScale.getStyle()
+                .set("font-size", "var(--lumo-font-size-xs)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        Span maxLabel = new Span(maxHeapUsed + " MB");
+        Span middleLabel = new Span(((maxHeapUsed + minHeapUsed) / 2) + " MB");
+        Span minLabel = new Span(minHeapUsed + " MB");
+
+        yScale.add(maxLabel, new Span(""), middleLabel, new Span(""), minLabel);
+        yScale.expand(yScale.getComponentAt(1), yScale.getComponentAt(3));
 
         HorizontalLayout bars = new HorizontalLayout();
         bars.setPadding(false);
@@ -443,11 +480,13 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 .set("padding", "var(--lumo-space-s)")
                 .set("background", "var(--lumo-contrast-5pct)");
 
+        long visibleRange = Math.max(1L, maxHeapUsed - minHeapUsed);
+
         for (ExternalMetricSample sample : visibleSamples) {
             long heapUsed = sample.heapUsedMb();
-            int heightPercentage = maxHeapUsed <= 0
-                    ? 1
-                    : Math.max(4, (int) Math.round(heapUsed * 100.0 / maxHeapUsed));
+            int heightPercentage = maxHeapUsed == minHeapUsed
+                    ? 50
+                    : Math.max(4, (int) Math.round((heapUsed - minHeapUsed) * 100.0 / visibleRange));
 
             Div bar = new Div();
             bar.getStyle()
@@ -462,14 +501,30 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             bars.add(bar);
         }
 
-        Span caption = new Span("Showing latest " + visibleSamples.size() + " samples. Max visible heap used: " + maxHeapUsed + " MB.");
+        chartRow.add(yScale, bars);
+        chartRow.expand(bars);
+
+        Span xAxisLabel = new Span("X: recent samples, oldest → newest");
+        xAxisLabel.getStyle()
+                .set("display", "block")
+                .set("margin-top", "var(--lumo-space-xs)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        Span caption = new Span(
+                "Showing latest " + visibleSamples.size()
+                        + " samples. Min: " + minHeapUsed
+                        + " MB, Max: " + maxHeapUsed
+                        + " MB, Latest: " + latestHeapUsed
+                        + " MB."
+        );
         caption.getStyle()
                 .set("display", "block")
                 .set("margin-top", "var(--lumo-space-xs)")
                 .set("color", "var(--lumo-secondary-text-color)");
 
-        heapTrendChart.add(bars, caption);
+        heapTrendChart.add(yAxisLabel, chartRow, xAxisLabel, caption);
     }
+
 
     private void styleHeapTrendChart() {
         heapTrendChart.setWidthFull();
