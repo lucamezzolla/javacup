@@ -54,6 +54,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - Auto-refreshing external process metrics every 5 seconds
 - External metrics page can still probe a PID when ProcessHandle metadata is unavailable
 - External metrics page shows last refresh time for auto-refresh verification
+- In-memory monitoring session for external process metrics
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
 - Current JVM class loading metrics

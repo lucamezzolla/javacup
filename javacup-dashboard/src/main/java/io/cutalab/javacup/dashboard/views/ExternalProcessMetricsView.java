@@ -3,7 +3,6 @@ package io.cutalab.javacup.dashboard.views;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -22,12 +21,15 @@ import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
 import io.cutalab.javacup.core.process.ProcessProbeResult;
+import io.cutalab.javacup.core.session.MonitoringSession;
 import io.cutalab.javacup.dashboard.ExternalHeapDiagnosticsService;
 import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
+import io.cutalab.javacup.dashboard.MonitoringSessionService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -36,16 +38,26 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private static final int AUTO_REFRESH_INTERVAL_MS = 5_000;
     private static final DateTimeFormatter REFRESH_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter SESSION_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     private final LocalJavaProcessService processService;
     private final ExternalProcessProbeService probeService;
     private final ExternalHeapInfoService heapInfoService;
     private final ExternalHeapDiagnosticsService diagnosticsService;
+    private final MonitoringSessionService monitoringSessionService;
 
     private final H1 title = new H1("External process metrics");
     private final Span pid = new Span();
     private final Span application = new Span();
     private final Span type = new Span();
+
+    private final Span autoRefreshStatus = new Span("Auto-refresh: waiting for page attach");
+    private final Span lastRefresh = new Span("Last refresh: never");
+
+    private final Span sessionId = new Span("Session ID: unavailable");
+    private final Span sessionStatus = new Span("Status: unavailable");
+    private final Span sessionStartedAt = new Span("Started at: unavailable");
+    private final Span sessionLastUpdatedAt = new Span("Last updated at: unavailable");
 
     private final Span heapType = new Span();
     private final Span heapUsed = new Span();
@@ -62,24 +74,25 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private final Grid<DiagnosticWarning> diagnosticsGrid = new Grid<>(DiagnosticWarning.class, false);
 
-    private final Span autoRefreshStatus = new Span("Auto-refresh: waiting for page attach");
-    private final Span lastRefresh = new Span("Last refresh: never");
     private final Div rawHeapInfo = new Div();
     private final Div uptimeInfo = new Div();
 
     private Long selectedPid;
+    private boolean sessionStopped;
     private Registration pollRegistration;
 
     public ExternalProcessMetricsView(
             LocalJavaProcessService processService,
             ExternalProcessProbeService probeService,
             ExternalHeapInfoService heapInfoService,
-            ExternalHeapDiagnosticsService diagnosticsService
+            ExternalHeapDiagnosticsService diagnosticsService,
+            MonitoringSessionService monitoringSessionService
     ) {
         this.processService = processService;
         this.probeService = probeService;
         this.heapInfoService = heapInfoService;
         this.diagnosticsService = diagnosticsService;
+        this.monitoringSessionService = monitoringSessionService;
 
         setSizeFull();
         setPadding(true);
@@ -87,6 +100,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics(true));
+        Button stopButton = new Button("Stop session", event -> stopSession());
 
         configureDiagnosticsGrid();
 
@@ -96,8 +110,9 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         add(
                 title,
                 new Paragraph("This page reads external JVM information from a selected Java process using local JDK diagnostic commands."),
-                new HorizontalLayout(backButton, refreshButton),
+                new HorizontalLayout(backButton, refreshButton, stopButton),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
+                section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
@@ -111,14 +126,13 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        UI ui = attachEvent.getUI();
-        ui.setPollInterval(AUTO_REFRESH_INTERVAL_MS);
+        attachEvent.getUI().setPollInterval(AUTO_REFRESH_INTERVAL_MS);
 
         if (pollRegistration != null) {
             pollRegistration.remove();
         }
 
-        pollRegistration = ui.addPollListener(event -> refreshMetrics(false));
+        pollRegistration = attachEvent.getUI().addPollListener(event -> refreshMetrics(false));
         autoRefreshStatus.setText("Auto-refresh: every 5 seconds");
 
         refreshMetrics(false);
@@ -138,33 +152,16 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     @Override
     public void setParameter(BeforeEvent event, Long processId) {
         selectedPid = processId;
+        sessionStopped = false;
         showProcess(processId);
     }
 
     private void configureDiagnosticsGrid() {
-        diagnosticsGrid.addColumn(DiagnosticWarning::code)
-                .setHeader("Code")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
-
-        diagnosticsGrid.addColumn(DiagnosticWarning::severity)
-                .setHeader("Severity")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
-
-        diagnosticsGrid.addColumn(DiagnosticWarning::title)
-                .setHeader("Title")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
-
-        diagnosticsGrid.addColumn(DiagnosticWarning::evidence)
-                .setHeader("Evidence")
-                .setFlexGrow(1);
-
-        diagnosticsGrid.addColumn(DiagnosticWarning::recommendation)
-                .setHeader("Recommendation")
-                .setFlexGrow(1);
-
+        diagnosticsGrid.addColumn(DiagnosticWarning::code).setHeader("Code").setAutoWidth(true).setFlexGrow(0);
+        diagnosticsGrid.addColumn(DiagnosticWarning::severity).setHeader("Severity").setAutoWidth(true).setFlexGrow(0);
+        diagnosticsGrid.addColumn(DiagnosticWarning::title).setHeader("Title").setAutoWidth(true).setFlexGrow(0);
+        diagnosticsGrid.addColumn(DiagnosticWarning::evidence).setHeader("Evidence").setFlexGrow(1);
+        diagnosticsGrid.addColumn(DiagnosticWarning::recommendation).setHeader("Recommendation").setFlexGrow(1);
         diagnosticsGrid.setAllRowsVisible(true);
     }
 
@@ -183,6 +180,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             type.setText("Type: unknown, jcmd probe will still be attempted");
         }
 
+        updateSessionInfo(monitoringSessionService.startOrResume(processId));
         refreshMetrics(false);
     }
 
@@ -193,6 +191,15 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             }
             return;
         }
+
+        if (sessionStopped) {
+            if (showNotification) {
+                Notification.show("Monitoring session is stopped.");
+            }
+            return;
+        }
+
+        updateSessionInfo(monitoringSessionService.refresh(selectedPid));
 
         ExternalHeapInfo heapInfo = heapInfoService.readHeapInfo(selectedPid);
         ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedPid);
@@ -211,6 +218,24 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 Notification.show("External heap info refreshed, but structured parsing is incomplete.");
             }
         }
+    }
+
+    private void stopSession() {
+        if (selectedPid == null) {
+            Notification.show("No process selected.");
+            return;
+        }
+
+        sessionStopped = true;
+        updateSessionInfo(monitoringSessionService.stop(selectedPid));
+        Notification.show("Monitoring session stopped.");
+    }
+
+    private void updateSessionInfo(MonitoringSession session) {
+        sessionId.setText("Session ID: " + session.id());
+        sessionStatus.setText("Status: " + session.status());
+        sessionStartedAt.setText("Started at: " + SESSION_TIME_FORMATTER.format(session.startedAt()));
+        sessionLastUpdatedAt.setText("Last updated at: " + SESSION_TIME_FORMATTER.format(session.lastUpdatedAt()));
     }
 
     private void updateStructuredHeapInfo(ExternalHeapInfo heapInfo) {
