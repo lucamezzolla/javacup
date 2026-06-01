@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Parser tests for external heap and VM uptime parsing.
 - Structured external VM uptime parsed from `jcmd VM.uptime`.
 - Heap trend chart labels for external samples.
 - Lightweight heap usage trend chart for external samples.
