@@ -2,6 +2,7 @@ package io.cutalab.javacup.dashboard.views;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
@@ -13,9 +14,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
 import io.cutalab.javacup.core.process.ProcessProbeResult;
+import io.cutalab.javacup.dashboard.ExternalHeapDiagnosticsService;
 import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
@@ -26,6 +29,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final LocalJavaProcessService processService;
     private final ExternalProcessProbeService probeService;
     private final ExternalHeapInfoService heapInfoService;
+    private final ExternalHeapDiagnosticsService diagnosticsService;
 
     private final H1 title = new H1("External process metrics");
     private final Span pid = new Span();
@@ -45,6 +49,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span classSpaceCommitted = new Span();
     private final Span classSpaceReserved = new Span();
 
+    private final Grid<DiagnosticWarning> diagnosticsGrid = new Grid<>(DiagnosticWarning.class, false);
+
     private final Div rawHeapInfo = new Div();
     private final Div uptimeInfo = new Div();
 
@@ -53,11 +59,13 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     public ExternalProcessMetricsView(
             LocalJavaProcessService processService,
             ExternalProcessProbeService probeService,
-            ExternalHeapInfoService heapInfoService
+            ExternalHeapInfoService heapInfoService,
+            ExternalHeapDiagnosticsService diagnosticsService
     ) {
         this.processService = processService;
         this.probeService = probeService;
         this.heapInfoService = heapInfoService;
+        this.diagnosticsService = diagnosticsService;
 
         setSizeFull();
         setPadding(true);
@@ -65,6 +73,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics());
+
+        configureDiagnosticsGrid();
 
         styleTechnicalBlock(rawHeapInfo);
         styleTechnicalBlock(uptimeInfo);
@@ -77,6 +87,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
+                section("Diagnostics", new Paragraph("First rule: HEAP_NEAR_MAX. Trend-based diagnostics will be added later."), diagnosticsGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo)
         );
@@ -86,6 +97,33 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     public void setParameter(BeforeEvent event, Long processId) {
         processService.findJavaProcessByPid(processId)
                 .ifPresentOrElse(this::showProcess, () -> showMissingProcess(processId));
+    }
+
+    private void configureDiagnosticsGrid() {
+        diagnosticsGrid.addColumn(DiagnosticWarning::code)
+                .setHeader("Code")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
+        diagnosticsGrid.addColumn(DiagnosticWarning::severity)
+                .setHeader("Severity")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
+        diagnosticsGrid.addColumn(DiagnosticWarning::title)
+                .setHeader("Title")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
+        diagnosticsGrid.addColumn(DiagnosticWarning::evidence)
+                .setHeader("Evidence")
+                .setFlexGrow(1);
+
+        diagnosticsGrid.addColumn(DiagnosticWarning::recommendation)
+                .setHeader("Recommendation")
+                .setFlexGrow(1);
+
+        diagnosticsGrid.setAllRowsVisible(true);
     }
 
     private void showProcess(JavaProcessInfo process) {
@@ -108,6 +146,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         type.setText("Type: unavailable");
 
         clearStructuredValues();
+        diagnosticsGrid.setItems();
         rawHeapInfo.setText("Process not found or not recognized as a Java process.");
         uptimeInfo.setText("Process not found or not recognized as a Java process.");
 
@@ -124,6 +163,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedProcess.pid());
 
         updateStructuredHeapInfo(heapInfo);
+        diagnosticsGrid.setItems(diagnosticsService.analyze(heapInfo));
 
         rawHeapInfo.setText(heapInfo.rawOutput());
         uptimeInfo.setText(uptimeResult.displayText());

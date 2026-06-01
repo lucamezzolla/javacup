@@ -50,6 +50,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - Raw external VM uptime probe through `jcmd VM.uptime`
 - External process metrics page based on raw `jcmd` probes
 - Structured external heap summary parsed from `jcmd GC.heap_info`
+- First external heap diagnostic rule: `HEAP_NEAR_MAX`
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
 - Current JVM class loading metrics
@@ -283,7 +284,7 @@ Reading structured metrics from an external Java process will require a later mi
 - GC and thread metrics
 - In-memory metric sampling
 - External process access probes
-- First diagnostic warnings
+- First diagnostic warnings, including HEAP_NEAR_MAX
 - HTML/JSON report export
 - Demo applications with controlled leaks
 
