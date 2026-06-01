@@ -37,41 +37,38 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 ## Current features
 
 - Local Vaadin dashboard running on `127.0.0.1:8787`
-- Shared application layout with sidebar navigation and branded header styling
-- Compact Javacup header with coffee icon
 - Local Java process discovery through the Java `ProcessHandle` API
 - Process filtering by PID, application name, type, command or arguments
-- Compact process table with shortened arguments and native browser hint details
 - Self-process detection
 - Process detail page at `/processes/{pid}`
-- Wrapped process arguments in the process detail page
-- Local access probe for selected Java processes using `jcmd`
-- Raw external heap information probe through `jcmd GC.heap_info`
-- Raw external VM uptime probe through `jcmd VM.uptime`
-- External process metrics page based on raw `jcmd` probes
-- Structured external heap summary parsed from `jcmd GC.heap_info`
-- First external heap diagnostic rule: `HEAP_NEAR_MAX`
-- First trend-based external heap diagnostic: `HEAP_SESSION_GROWING`
-- Auto-refreshing external process metrics every 5 seconds
-- External metrics page can still probe a PID when ProcessHandle metadata is unavailable
-- External metrics page shows last refresh time for auto-refresh verification
-- In-memory monitoring session for external process metrics
-- Recent in-memory samples for external monitored processes
+- Local `jcmd` probes for selected Java processes:
+  - `VM.version`
+  - `GC.heap_info`
+  - `VM.uptime`
+- External process metrics page at `/metrics/external/{pid}`
+- External heap summary parsed from `jcmd GC.heap_info`
+- External monitoring session model
+- Auto-refreshing external process metrics
+- In-memory external metric samples
 - External sample buffer limited to 100 samples per monitoring session
 - Session trend summary for external heap samples
-- External monitoring report model and readable preview
+- Basic external diagnostics:
+  - `HEAP_NEAR_MAX`
+  - `HEAP_SESSION_GROWING`
+- External monitoring report model
+- Readable external report preview
 - JSON download for external monitoring reports
-- Direct JSON download link for external monitoring reports
-- Report download action moved to the top of the external metrics view
-- Improved bottom spacing for dashboard views
-- Bounded external samples grid to avoid page growth during long sessions
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
 - Current JVM class loading metrics
 - Current JVM garbage collection metrics
+- Current JVM uptime metrics
 - In-memory JVM metric sampling every 2 seconds
-- Recent metric samples table
-- Demo memory application with normal, burst and intentional leak modes
+- Recent JVM metric samples table
+- Demo memory application with:
+  - normal mode
+  - burst allocation mode
+  - intentional leak mode
 
 ---
 
