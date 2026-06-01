@@ -22,6 +22,11 @@ public class LocalJavaProcessService {
                 .toList();
     }
 
+    public Optional<JavaProcessInfo> findJavaProcessByPid(long pid) {
+        return ProcessHandle.of(pid)
+                .flatMap(this::toJavaProcessInfo);
+    }
+
     private Optional<JavaProcessInfo> toJavaProcessInfo(ProcessHandle process) {
         ProcessHandle.Info info = process.info();
         Optional<String> command = info.command();

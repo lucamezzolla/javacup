@@ -4,7 +4,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -82,11 +81,11 @@ public class ProcessesView extends VerticalLayout {
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
-        grid.addComponentColumn(process -> new Button(process.currentProcess() ? "Self metrics" : "Monitor later", event -> {
+        grid.addComponentColumn(process -> new Button(process.currentProcess() ? "Self metrics" : "Open details", event -> {
                     if (process.currentProcess()) {
                         getUI().ifPresent(ui -> ui.navigate("metrics/current"));
                     } else {
-                        Notification.show("Monitoring process " + process.pid() + " will be added in a later step.");
+                        getUI().ifPresent(ui -> ui.navigate("processes/" + process.pid()));
                     }
                 }))
                 .setHeader("Action")
@@ -97,12 +96,6 @@ public class ProcessesView extends VerticalLayout {
     private void refresh() {
         allProcesses = processService.findJavaProcesses();
         applyFilter();
-
-        if (allProcesses.isEmpty()) {
-            Notification.show("No local Java processes detected.");
-        } else {
-            Notification.show(allProcesses.size() + " Java process(es) detected.");
-        }
     }
 
     private void applyFilter() {
