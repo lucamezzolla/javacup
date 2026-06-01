@@ -46,26 +46,20 @@ External JVM monitoring is being introduced progressively. Javacup can currently
   - `GC.heap_info`
   - `VM.uptime`
 - External process metrics page at `/metrics/external/{pid}`
+- Probe status explanation for external JVM metrics
 - External heap summary parsed from `jcmd GC.heap_info`
 - Structured external VM uptime parsed from `jcmd VM.uptime`
-- Probe status explanation for external JVM metrics
-- Parser tests for external heap and VM uptime parsing
-- Tests for external heap trend diagnostics and sample summaries
-- Tests for current external heap diagnostics
-- Tests for external sample buffer retention
-- JUnit 5 test setup for core and dashboard modules
 - External monitoring session model
 - Auto-refreshing external process metrics
 - In-memory external metric samples
 - External sample buffer limited to 100 samples per monitoring session
 - Session trend summary for external heap samples
 - Lightweight heap usage trend chart for external samples
-- Heap trend chart labels for external samples
 - Basic external diagnostics:
   - `HEAP_NEAR_MAX`
   - `HEAP_SESSION_GROWING`
 - External monitoring report model
-- Readable external report preview
+- Report preview dialog
 - JSON download for external monitoring reports
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
@@ -78,6 +72,13 @@ External JVM monitoring is being introduced progressively. Javacup can currently
   - normal mode
   - burst allocation mode
   - intentional leak mode
+- Automated tests for:
+  - external heap parsing
+  - external VM uptime parsing
+  - external heap diagnostics
+  - external heap trend diagnostics
+  - external sample summaries
+  - external sample buffer retention
 
 ---
 
@@ -212,12 +213,13 @@ You should see the demo JAR as a separate Java process.
 
 ## External monitoring reports
 
-The external metrics page can generate a JSON report for the selected Java process.
+The external metrics page can generate a report for the selected Java process.
 
 The report currently includes:
 
 - monitoring session metadata;
 - selected process PID and status;
+- structured VM uptime;
 - latest parsed heap information;
 - session trend summary;
 - diagnostic warnings;
@@ -226,10 +228,37 @@ The report currently includes:
 From the external metrics page, use:
 
 ```text
+Preview report
+```
+
+to open a readable report preview in a dialog.
+
+Use:
+
+```text
 Download JSON report
 ```
 
-The report is generated from the latest values available in the page.
+to download a JSON report generated from the latest values available in the page.
+
+---
+
+
+## Testing
+
+Run the automated test suite with:
+
+```bash
+mvn test
+```
+
+Build all modules without running tests with:
+
+```bash
+mvn -DskipTests package
+```
+
+The current test suite covers the first parser and diagnostic components used by the external metrics page.
 
 ---
 
