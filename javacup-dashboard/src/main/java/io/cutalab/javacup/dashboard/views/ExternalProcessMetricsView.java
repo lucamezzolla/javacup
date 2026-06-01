@@ -27,12 +27,15 @@ import io.cutalab.javacup.dashboard.ExternalHeapDiagnosticsService;
 import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
+import io.cutalab.javacup.dashboard.ExternalSampleDiagnosticsService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
 import io.cutalab.javacup.dashboard.MonitoringSessionService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Route(value = "metrics/external", layout = MainLayout.class)
@@ -49,6 +52,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final ExternalHeapDiagnosticsService diagnosticsService;
     private final MonitoringSessionService monitoringSessionService;
     private final ExternalMetricSampleService sampleService;
+    private final ExternalSampleDiagnosticsService sampleDiagnosticsService;
 
     private final H1 title = new H1("External process metrics");
     private final Span pid = new Span();
@@ -93,7 +97,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             ExternalHeapInfoService heapInfoService,
             ExternalHeapDiagnosticsService diagnosticsService,
             MonitoringSessionService monitoringSessionService,
-            ExternalMetricSampleService sampleService
+            ExternalMetricSampleService sampleService,
+            ExternalSampleDiagnosticsService sampleDiagnosticsService
     ) {
         this.processService = processService;
         this.probeService = probeService;
@@ -101,6 +106,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         this.diagnosticsService = diagnosticsService;
         this.monitoringSessionService = monitoringSessionService;
         this.sampleService = sampleService;
+        this.sampleDiagnosticsService = sampleDiagnosticsService;
 
         setSizeFull();
         setPadding(true);
@@ -244,13 +250,18 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedPid);
 
         updateStructuredHeapInfo(heapInfo);
-        diagnosticsGrid.setItems(diagnosticsService.analyze(heapInfo));
 
         if (heapInfo.hasStructuredValues()) {
             sampleService.addSample(currentSession, heapInfo);
         }
 
-        samplesGrid.setItems(sampleService.findSamples(currentSession.id()).reversed());
+        List<ExternalMetricSample> samples = sampleService.findSamples(currentSession.id());
+
+        List<DiagnosticWarning> warnings = new ArrayList<>(diagnosticsService.analyze(heapInfo));
+        warnings.addAll(sampleDiagnosticsService.analyze(samples));
+        diagnosticsGrid.setItems(warnings);
+
+        samplesGrid.setItems(samples.reversed());
 
         rawHeapInfo.setText(heapInfo.rawOutput());
         uptimeInfo.setText(uptimeResult.displayText());
