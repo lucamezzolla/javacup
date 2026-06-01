@@ -1,6 +1,9 @@
 package io.cutalab.javacup.dashboard.views;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -14,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.Registration;
 import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
@@ -23,8 +27,15 @@ import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 @Route(value = "metrics/external", layout = MainLayout.class)
 public class ExternalProcessMetricsView extends VerticalLayout implements HasUrlParameter<Long> {
+
+    private static final int AUTO_REFRESH_INTERVAL_MS = 5_000;
+    private static final DateTimeFormatter REFRESH_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     private final LocalJavaProcessService processService;
     private final ExternalProcessProbeService probeService;
@@ -51,10 +62,13 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private final Grid<DiagnosticWarning> diagnosticsGrid = new Grid<>(DiagnosticWarning.class, false);
 
+    private final Span autoRefreshStatus = new Span("Auto-refresh: waiting for page attach");
+    private final Span lastRefresh = new Span("Last refresh: never");
     private final Div rawHeapInfo = new Div();
     private final Div uptimeInfo = new Div();
 
-    private JavaProcessInfo selectedProcess;
+    private Long selectedPid;
+    private Registration pollRegistration;
 
     public ExternalProcessMetricsView(
             LocalJavaProcessService processService,
@@ -72,7 +86,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         setSpacing(true);
 
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
-        Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics());
+        Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics(true));
 
         configureDiagnosticsGrid();
 
@@ -83,7 +97,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 title,
                 new Paragraph("This page reads external JVM information from a selected Java process using local JDK diagnostic commands."),
                 new HorizontalLayout(backButton, refreshButton),
-                section("Selected process", pid, application, type),
+                section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
@@ -94,9 +108,37 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     }
 
     @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        UI ui = attachEvent.getUI();
+        ui.setPollInterval(AUTO_REFRESH_INTERVAL_MS);
+
+        if (pollRegistration != null) {
+            pollRegistration.remove();
+        }
+
+        pollRegistration = ui.addPollListener(event -> refreshMetrics(false));
+        autoRefreshStatus.setText("Auto-refresh: every 5 seconds");
+
+        refreshMetrics(false);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if (pollRegistration != null) {
+            pollRegistration.remove();
+            pollRegistration = null;
+        }
+
+        detachEvent.getUI().setPollInterval(-1);
+        super.onDetach(detachEvent);
+    }
+
+    @Override
     public void setParameter(BeforeEvent event, Long processId) {
-        processService.findJavaProcessByPid(processId)
-                .ifPresentOrElse(this::showProcess, () -> showMissingProcess(processId));
+        selectedPid = processId;
+        showProcess(processId);
     }
 
     private void configureDiagnosticsGrid() {
@@ -126,52 +168,48 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         diagnosticsGrid.setAllRowsVisible(true);
     }
 
-    private void showProcess(JavaProcessInfo process) {
-        selectedProcess = process;
+    private void showProcess(Long processId) {
+        Optional<JavaProcessInfo> processInfo = processService.findJavaProcessByPid(processId);
 
-        title.setText("External metrics for process " + process.pid());
-        pid.setText("PID: " + process.pid());
-        application.setText("Application: " + process.applicationName());
-        type.setText("Type: " + process.processType());
-
-        refreshMetrics();
-    }
-
-    private void showMissingProcess(Long processId) {
-        selectedProcess = null;
-
-        title.setText("External process not available");
+        title.setText("External metrics for process " + processId);
         pid.setText("PID: " + processId);
-        application.setText("Application: unavailable");
-        type.setText("Type: unavailable");
 
-        clearStructuredValues();
-        diagnosticsGrid.setItems();
-        rawHeapInfo.setText("Process not found or not recognized as a Java process.");
-        uptimeInfo.setText("Process not found or not recognized as a Java process.");
+        if (processInfo.isPresent()) {
+            JavaProcessInfo process = processInfo.get();
+            application.setText("Application: " + process.applicationName());
+            type.setText("Type: " + process.processType());
+        } else {
+            application.setText("Application: unavailable from ProcessHandle");
+            type.setText("Type: unknown, jcmd probe will still be attempted");
+        }
 
-        Notification.show("Process " + processId + " is not available.");
+        refreshMetrics(false);
     }
 
-    private void refreshMetrics() {
-        if (selectedProcess == null) {
-            Notification.show("No process selected.");
+    private void refreshMetrics(boolean showNotification) {
+        if (selectedPid == null) {
+            if (showNotification) {
+                Notification.show("No process selected.");
+            }
             return;
         }
 
-        ExternalHeapInfo heapInfo = heapInfoService.readHeapInfo(selectedProcess.pid());
-        ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedProcess.pid());
+        ExternalHeapInfo heapInfo = heapInfoService.readHeapInfo(selectedPid);
+        ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedPid);
 
         updateStructuredHeapInfo(heapInfo);
         diagnosticsGrid.setItems(diagnosticsService.analyze(heapInfo));
 
         rawHeapInfo.setText(heapInfo.rawOutput());
         uptimeInfo.setText(uptimeResult.displayText());
+        lastRefresh.setText("Last refresh: " + LocalDateTime.now().format(REFRESH_TIME_FORMATTER));
 
-        if (heapInfo.hasStructuredValues()) {
-            Notification.show("External metrics refreshed.");
-        } else {
-            Notification.show("External heap info refreshed, but structured parsing is incomplete.");
+        if (showNotification) {
+            if (heapInfo.hasStructuredValues()) {
+                Notification.show("External metrics refreshed.");
+            } else {
+                Notification.show("External heap info refreshed, but structured parsing is incomplete.");
+            }
         }
     }
 
@@ -188,21 +226,6 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         classSpaceUsed.setText("Compressed class space used: " + formatMb(heapInfo.classSpaceUsedMb()));
         classSpaceCommitted.setText("Compressed class space committed: " + formatMb(heapInfo.classSpaceCommittedMb()));
         classSpaceReserved.setText("Compressed class space reserved: " + formatMb(heapInfo.classSpaceReservedMb()));
-    }
-
-    private void clearStructuredValues() {
-        heapType.setText("Heap type: unavailable");
-        heapUsed.setText("Heap used: unavailable");
-        heapTotal.setText("Heap total/committed: unavailable");
-        heapReserved.setText("Heap reserved: unavailable");
-
-        metaspaceUsed.setText("Metaspace used: unavailable");
-        metaspaceCommitted.setText("Metaspace committed: unavailable");
-        metaspaceReserved.setText("Metaspace reserved: unavailable");
-
-        classSpaceUsed.setText("Compressed class space used: unavailable");
-        classSpaceCommitted.setText("Compressed class space committed: unavailable");
-        classSpaceReserved.setText("Compressed class space reserved: unavailable");
     }
 
     private String formatMb(java.util.Optional<Long> value) {

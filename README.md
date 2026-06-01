@@ -51,6 +51,9 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - External process metrics page based on raw `jcmd` probes
 - Structured external heap summary parsed from `jcmd GC.heap_info`
 - First external heap diagnostic rule: `HEAP_NEAR_MAX`
+- Auto-refreshing external process metrics every 5 seconds
+- External metrics page can still probe a PID when ProcessHandle metadata is unavailable
+- External metrics page shows last refresh time for auto-refresh verification
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
 - Current JVM class loading metrics
