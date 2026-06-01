@@ -60,3 +60,7 @@ diagnostics/
 # Environment files
 .env
 .env.*
+# Vaadin generated frontend files
+javacup-dashboard/src/main/frontend/generated/
+**/src/main/frontend/generated/
+**/frontend/generated/

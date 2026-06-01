@@ -1,0 +1,11 @@
+# GitHub Linguist hints
+# Vaadin frontend files are generated and should not dominate language statistics.
+
+javacup-dashboard/src/main/frontend/generated/** linguist-generated=true
+**/src/main/frontend/generated/** linguist-generated=true
+**/frontend/generated/** linguist-generated=true
+
+# Build/generated frontend artifacts
+**/src/main/bundles/** linguist-generated=true
+**/src/main/dev-bundle/** linguist-generated=true
+**/node_modules/** linguist-vendored=true
