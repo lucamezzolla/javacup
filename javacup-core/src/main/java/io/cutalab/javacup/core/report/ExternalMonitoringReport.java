@@ -1,0 +1,20 @@
+package io.cutalab.javacup.core.report;
+
+import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
+import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
+import io.cutalab.javacup.core.session.ExternalMetricSample;
+import io.cutalab.javacup.core.session.ExternalMetricSampleSummary;
+import io.cutalab.javacup.core.session.MonitoringSession;
+
+import java.time.Instant;
+import java.util.List;
+
+public record ExternalMonitoringReport(
+        Instant generatedAt,
+        MonitoringSession session,
+        ExternalHeapInfo latestHeapInfo,
+        ExternalMetricSampleSummary sampleSummary,
+        List<DiagnosticWarning> diagnostics,
+        List<ExternalMetricSample> recentSamples
+) {
+}

@@ -21,6 +21,7 @@ import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
 import io.cutalab.javacup.core.process.ProcessProbeResult;
+import io.cutalab.javacup.core.report.ExternalMonitoringReport;
 import io.cutalab.javacup.core.session.ExternalMetricSample;
 import io.cutalab.javacup.core.session.ExternalMetricSampleSummary;
 import io.cutalab.javacup.core.session.MonitoringSession;
@@ -28,6 +29,7 @@ import io.cutalab.javacup.dashboard.ExternalHeapDiagnosticsService;
 import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleSummaryService;
+import io.cutalab.javacup.dashboard.ExternalMonitoringReportService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
 import io.cutalab.javacup.dashboard.ExternalSampleDiagnosticsService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
@@ -56,6 +58,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final MonitoringSessionService monitoringSessionService;
     private final ExternalMetricSampleService sampleService;
     private final ExternalMetricSampleSummaryService sampleSummaryService;
+    private final ExternalMonitoringReportService reportService;
 
     private final H1 title = new H1("External process metrics");
     private final Span pid = new Span();
@@ -96,9 +99,14 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private final Div rawHeapInfo = new Div();
     private final Div uptimeInfo = new Div();
+    private final Div reportPreview = new Div();
 
     private Long selectedPid;
     private MonitoringSession currentSession;
+    private ExternalHeapInfo latestHeapInfo;
+    private ExternalMetricSampleSummary latestSampleSummary;
+    private List<DiagnosticWarning> latestDiagnostics = List.of();
+    private List<ExternalMetricSample> latestSamples = List.of();
     private boolean sessionStopped;
     private Registration pollRegistration;
 
@@ -110,7 +118,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             ExternalSampleDiagnosticsService sampleDiagnosticsService,
             MonitoringSessionService monitoringSessionService,
             ExternalMetricSampleService sampleService,
-            ExternalMetricSampleSummaryService sampleSummaryService
+            ExternalMetricSampleSummaryService sampleSummaryService,
+            ExternalMonitoringReportService reportService
     ) {
         this.processService = processService;
         this.probeService = probeService;
@@ -120,6 +129,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         this.monitoringSessionService = monitoringSessionService;
         this.sampleService = sampleService;
         this.sampleSummaryService = sampleSummaryService;
+        this.reportService = reportService;
 
         setSizeFull();
         setPadding(true);
@@ -128,17 +138,19 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics(true));
         Button stopButton = new Button("Stop session", event -> stopSession());
+        Button previewReportButton = new Button("Preview report", event -> previewReport());
 
         configureDiagnosticsGrid();
         configureSamplesGrid();
 
         styleTechnicalBlock(rawHeapInfo);
         styleTechnicalBlock(uptimeInfo);
+        styleTechnicalBlock(reportPreview);
 
         add(
                 title,
                 new Paragraph("This page reads external JVM information from a selected Java process using local JDK diagnostic commands."),
-                new HorizontalLayout(backButton, refreshButton, stopButton),
+                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
@@ -148,7 +160,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Session trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
-                section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo)
+                section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo),
+                section("Report preview", new Paragraph("Readable preview of the report data. JSON download will be added in the next step."), reportPreview)
         );
     }
 
@@ -260,36 +273,56 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         currentSession = monitoringSessionService.refresh(selectedPid);
         updateSessionInfo(currentSession);
 
-        ExternalHeapInfo heapInfo = heapInfoService.readHeapInfo(selectedPid);
+        latestHeapInfo = heapInfoService.readHeapInfo(selectedPid);
         ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedPid);
 
-        updateStructuredHeapInfo(heapInfo);
+        updateStructuredHeapInfo(latestHeapInfo);
 
-        if (heapInfo.hasStructuredValues()) {
-            sampleService.addSample(currentSession, heapInfo);
+        if (latestHeapInfo.hasStructuredValues()) {
+            sampleService.addSample(currentSession, latestHeapInfo);
         }
 
-        List<ExternalMetricSample> samples = sampleService.findSamples(currentSession.id());
+        latestSamples = sampleService.findSamples(currentSession.id());
 
-        List<DiagnosticWarning> warnings = new ArrayList<>(diagnosticsService.analyze(heapInfo));
-        warnings.addAll(sampleDiagnosticsService.analyze(samples));
+        List<DiagnosticWarning> warnings = new ArrayList<>(diagnosticsService.analyze(latestHeapInfo));
+        warnings.addAll(sampleDiagnosticsService.analyze(latestSamples));
+        latestDiagnostics = List.copyOf(warnings);
         diagnosticsGrid.setItems(warnings);
 
-        updateSampleSummary(sampleSummaryService.summarize(samples));
-        samplesRetained.setText("Samples retained: " + samples.size() + " / " + sampleService.maxSamplesPerSession());
-        samplesGrid.setItems(samples.reversed());
+        latestSampleSummary = sampleSummaryService.summarize(latestSamples);
+        updateSampleSummary(latestSampleSummary);
+        samplesRetained.setText("Samples retained: " + latestSamples.size() + " / " + sampleService.maxSamplesPerSession());
+        samplesGrid.setItems(latestSamples.reversed());
 
-        rawHeapInfo.setText(heapInfo.rawOutput());
+        rawHeapInfo.setText(latestHeapInfo.rawOutput());
         uptimeInfo.setText(uptimeResult.displayText());
         lastRefresh.setText("Last refresh: " + LocalDateTime.now().format(REFRESH_TIME_FORMATTER));
 
         if (showNotification) {
-            if (heapInfo.hasStructuredValues()) {
+            if (latestHeapInfo.hasStructuredValues()) {
                 Notification.show("External metrics refreshed.");
             } else {
                 Notification.show("External heap info refreshed, but structured parsing is incomplete.");
             }
         }
+    }
+
+    private void previewReport() {
+        if (currentSession == null || latestHeapInfo == null || latestSampleSummary == null) {
+            Notification.show("No report data available yet.");
+            return;
+        }
+
+        ExternalMonitoringReport report = reportService.createReport(
+                currentSession,
+                latestHeapInfo,
+                latestSampleSummary,
+                latestDiagnostics,
+                latestSamples
+        );
+
+        reportPreview.setText(reportService.createReadablePreview(report));
+        Notification.show("Report preview updated.");
     }
 
     private void stopSession() {
