@@ -45,7 +45,7 @@ Thumbs.db
 
 # Reports and local diagnostic output
 reports/generated/
-diagnostics/
+/local-diagnostics/
 *.jfr
 *.hprof
 *.heapdump
