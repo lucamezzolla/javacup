@@ -111,11 +111,11 @@ public class ProcessesView extends VerticalLayout {
     }
 
     private Button actionButton(JavaProcessInfo process) {
-        return new Button(process.currentProcess() ? "Self metrics" : "Open details", event -> {
+        return new Button(process.currentProcess() ? "Self metrics" : "Open metrics", event -> {
             if (process.currentProcess()) {
                 getUI().ifPresent(ui -> ui.navigate("metrics/current"));
             } else {
-                getUI().ifPresent(ui -> ui.navigate("processes/" + process.pid()));
+                getUI().ifPresent(ui -> ui.navigate("metrics/external/" + process.pid()));
             }
         });
     }
