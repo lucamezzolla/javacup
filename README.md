@@ -26,7 +26,8 @@ The first goal is to build a small, reliable local MVP:
 Current milestone:
 
 - local dashboard starts on `127.0.0.1:8787`;
-- `/processes` lists local Java processes through the Java `ProcessHandle` API.
+- `/processes` lists local Java processes through the Java `ProcessHandle` API;
+- `/metrics/current` shows lightweight JVM metrics for the Javacup process itself.
 
 ---
 
