@@ -197,7 +197,9 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 .setHeader("Class space used")
                 .setAutoWidth(true);
 
-        samplesGrid.setAllRowsVisible(true);
+        samplesGrid.setAllRowsVisible(false);
+        samplesGrid.setHeight("260px");
+        samplesGrid.setWidthFull();
     }
 
     private void showProcess(Long processId) {
@@ -248,7 +250,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             sampleService.addSample(currentSession, heapInfo);
         }
 
-        samplesGrid.setItems(sampleService.findSamples(currentSession.id()));
+        samplesGrid.setItems(sampleService.findSamples(currentSession.id()).reversed());
 
         rawHeapInfo.setText(heapInfo.rawOutput());
         uptimeInfo.setText(uptimeResult.displayText());
