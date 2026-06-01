@@ -48,6 +48,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - External process metrics page at `/metrics/external/{pid}`
 - External heap summary parsed from `jcmd GC.heap_info`
 - Structured external VM uptime parsed from `jcmd VM.uptime`
+- Probe status explanation for external JVM metrics
 - Parser tests for external heap and VM uptime parsing
 - Tests for external heap trend diagnostics and sample summaries
 - JUnit 5 test setup for core and dashboard modules

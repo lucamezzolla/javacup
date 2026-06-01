@@ -82,6 +82,9 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span type = new Span();
     private final Span vmUptime = new Span("VM uptime: unavailable");
     private final Span vmUptimeSeconds = new Span("VM uptime seconds: unavailable");
+    private final Span processAvailability = new Span("Process availability: unknown");
+    private final Span probeAvailability = new Span("Probe availability: unknown");
+    private final Span probeHint = new Span("Probe hint: waiting for first refresh");
 
     private final Span autoRefreshStatus = new Span("Auto-refresh: waiting for page attach");
     private final Span lastRefresh = new Span("Last refresh: never");
@@ -197,6 +200,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, downloadReportLink),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
+                section("Probe status", processAvailability, probeAvailability, probeHint),
                 section("Structured VM uptime", vmUptime, vmUptimeSeconds),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
@@ -348,6 +352,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         latestVmUptime = uptimeService.readUptime(selectedPid);
 
         updateStructuredHeapInfo(latestHeapInfo);
+        updateProbeStatus();
 
         if (latestHeapInfo.hasStructuredValues()) {
             sampleService.addSample(currentSession, latestHeapInfo);
@@ -573,6 +578,88 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 .set("padding-bottom", "var(--lumo-space-s)");
     }
 
+
+
+    private void updateProbeStatus() {
+        if (selectedPid == null) {
+            processAvailability.setText("Process availability: unknown");
+            probeAvailability.setText("Probe availability: unknown");
+            probeHint.setText("Probe hint: no process selected");
+            return;
+        }
+
+        boolean processAlive = ProcessHandle.of(selectedPid)
+                .map(ProcessHandle::isAlive)
+                .orElse(false);
+
+        processAvailability.setText("Process availability: " + (processAlive ? "alive" : "not visible or terminated"));
+
+        boolean heapStructured = latestHeapInfo != null && latestHeapInfo.hasStructuredValues();
+        boolean uptimeStructured = latestVmUptime != null && latestVmUptime.hasStructuredValue();
+
+        if (heapStructured || uptimeStructured) {
+            probeAvailability.setText("Probe availability: jcmd data available");
+            probeHint.setText("Probe hint: external JVM data is being collected successfully");
+            return;
+        }
+
+        String raw = collectRawProbeText();
+
+        if (!processAlive) {
+            probeAvailability.setText("Probe availability: unavailable");
+            probeHint.setText("Probe hint: the selected process may have terminated or may not be visible to this user");
+            return;
+        }
+
+        if (containsAny(raw, "permission", "operation not permitted", "access denied", "attachnot-supported")) {
+            probeAvailability.setText("Probe availability: permission issue");
+            probeHint.setText("Probe hint: jcmd may not be allowed to attach to this process with the current user");
+            return;
+        }
+
+        if (containsAny(raw, "no such process", "not found", "process not found")) {
+            probeAvailability.setText("Probe availability: process not found");
+            probeHint.setText("Probe hint: go back to Processes and select a currently running Java process");
+            return;
+        }
+
+        if (containsAny(raw, "jcmd", "cannot run program", "no such file", "error=2")) {
+            probeAvailability.setText("Probe availability: jcmd may be unavailable");
+            probeHint.setText("Probe hint: make sure Javacup is running with a JDK, not only a JRE, and that jcmd is available");
+            return;
+        }
+
+        probeAvailability.setText("Probe availability: raw output only");
+        probeHint.setText("Probe hint: jcmd returned data, but Javacup could not parse it into structured values yet");
+    }
+
+    private String collectRawProbeText() {
+        StringBuilder builder = new StringBuilder();
+
+        if (latestHeapInfo != null && latestHeapInfo.rawOutput() != null) {
+            builder.append(latestHeapInfo.rawOutput()).append('\n');
+        }
+
+        if (latestVmUptime != null && latestVmUptime.rawOutput() != null) {
+            builder.append(latestVmUptime.rawOutput()).append('\n');
+        }
+
+        return builder.toString().toLowerCase();
+    }
+
+    private boolean containsAny(String text, String... needles) {
+        if (text == null || text.isBlank()) {
+            return false;
+        }
+
+        for (String needle : needles) {
+            if (text.contains(needle.toLowerCase())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private void updateStructuredVmUptime(ExternalVmUptime uptime) {
         vmUptime.setText("VM uptime: " + uptime.displayValue());
