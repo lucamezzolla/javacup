@@ -43,20 +43,22 @@ public class ProcessDetailView extends VerticalLayout implements HasUrlParameter
         setSpacing(true);
 
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
-        Button checkAccessButton = new Button("Check local access", event -> checkLocalAccess());
+        Button checkAccessButton = new Button("Check local access", event -> runProbe(ProbeType.VM_VERSION));
+        Button heapInfoButton = new Button("Read heap info", event -> runProbe(ProbeType.HEAP_INFO));
+        Button uptimeButton = new Button("Read VM uptime", event -> runProbe(ProbeType.VM_UPTIME));
 
         styleTechnicalBlock(arguments);
         styleTechnicalBlock(probeOutput);
 
         add(
                 title,
-                new Paragraph("This page prepares the process selection flow. External process monitoring will be added in a later step."),
-                new HorizontalLayout(backButton, checkAccessButton),
+                new Paragraph("This page prepares the process selection flow. External process monitoring will be added progressively."),
+                new HorizontalLayout(backButton, checkAccessButton, heapInfoButton, uptimeButton),
                 section("Identity", pid, application, type),
                 section("Command", command),
                 section("Arguments", arguments),
-                section("Local access probe", new Paragraph("The access probe uses the local JDK `jcmd` tool to check whether this JVM can be queried."), probeOutput),
-                section("Next step", new Paragraph("The next technical milestone will read lightweight heap information from the selected process when local access is available."))
+                section("External JVM probe", new Paragraph("These probes use the local JDK `jcmd` tool to check and read basic information from the selected JVM."), probeOutput),
+                section("Next step", new Paragraph("The next milestone will convert command output into structured metrics instead of displaying raw text."))
         );
     }
 
@@ -94,19 +96,24 @@ public class ProcessDetailView extends VerticalLayout implements HasUrlParameter
         Notification.show("Process " + processId + " is not available.");
     }
 
-    private void checkLocalAccess() {
+    private void runProbe(ProbeType probeType) {
         if (currentProcess == null) {
             Notification.show("No process selected.");
             return;
         }
 
-        ProcessProbeResult result = probeService.probeVmVersion(currentProcess.pid());
+        ProcessProbeResult result = switch (probeType) {
+            case VM_VERSION -> probeService.probeVmVersion(currentProcess.pid());
+            case HEAP_INFO -> probeService.probeHeapInfo(currentProcess.pid());
+            case VM_UPTIME -> probeService.probeVmUptime(currentProcess.pid());
+        };
+
         probeOutput.setText(result.displayText());
 
         if (result.successful()) {
-            Notification.show("Local access probe succeeded.");
+            Notification.show(probeType.successMessage());
         } else {
-            Notification.show("Local access probe failed.");
+            Notification.show(probeType.failureMessage());
         }
     }
 
@@ -134,5 +141,27 @@ public class ProcessDetailView extends VerticalLayout implements HasUrlParameter
                 .set("border", "1px solid var(--lumo-contrast-20pct)")
                 .set("border-radius", "var(--lumo-border-radius-m)")
                 .set("background", "var(--lumo-contrast-5pct)");
+    }
+
+    private enum ProbeType {
+        VM_VERSION("Local access probe succeeded.", "Local access probe failed."),
+        HEAP_INFO("Heap info probe succeeded.", "Heap info probe failed."),
+        VM_UPTIME("VM uptime probe succeeded.", "VM uptime probe failed.");
+
+        private final String successMessage;
+        private final String failureMessage;
+
+        ProbeType(String successMessage, String failureMessage) {
+            this.successMessage = successMessage;
+            this.failureMessage = failureMessage;
+        }
+
+        public String successMessage() {
+            return successMessage;
+        }
+
+        public String failureMessage() {
+            return failureMessage;
+        }
     }
 }

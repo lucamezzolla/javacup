@@ -16,8 +16,20 @@ public class ExternalProcessProbeService {
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
     public ProcessProbeResult probeVmVersion(long pid) {
+        return executeJcmd(pid, "VM.version");
+    }
+
+    public ProcessProbeResult probeHeapInfo(long pid) {
+        return executeJcmd(pid, "GC.heap_info");
+    }
+
+    public ProcessProbeResult probeVmUptime(long pid) {
+        return executeJcmd(pid, "VM.uptime");
+    }
+
+    private ProcessProbeResult executeJcmd(long pid, String diagnosticCommand) {
         String jcmd = findJcmdExecutable();
-        List<String> command = List.of(jcmd, String.valueOf(pid), "VM.version");
+        List<String> command = List.of(jcmd, String.valueOf(pid), diagnosticCommand);
 
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.redirectErrorStream(false);

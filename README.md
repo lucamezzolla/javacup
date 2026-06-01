@@ -17,7 +17,7 @@ Javacup is currently in early development.
 The current version is a local development preview running on a Vaadin dashboard.
 It already provides process discovery, current JVM metrics and in-memory metric sampling for the Javacup process itself.
 
-External JVM monitoring is not enabled yet. The next technical milestone is to investigate safe local attach/JMX access for a selected Java process.
+External JVM monitoring is being introduced progressively. Javacup can currently run basic local `jcmd` probes against a selected Java process, including VM version, heap information and VM uptime.
 
 ---
 
@@ -31,6 +31,8 @@ External JVM monitoring is not enabled yet. The next technical milestone is to i
 - Self-process detection
 - Process detail page placeholder at `/processes/{pid}`
 - Local access probe for selected Java processes using `jcmd`
+- Raw external heap information probe through `jcmd GC.heap_info`
+- Raw external VM uptime probe through `jcmd VM.uptime`
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
 - Current JVM class loading metrics
