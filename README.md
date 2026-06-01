@@ -14,22 +14,39 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 Javacup is currently in early development.
 
-The first goal is to build a small, reliable local MVP:
+The current version is a local development preview running on a Vaadin dashboard.
+It already provides process discovery, current JVM metrics and in-memory metric sampling for the Javacup process itself.
 
-- run locally from a single Java command;
-- expose a Vaadin dashboard on localhost;
-- discover local Java processes;
-- monitor heap, non-heap, metaspace, garbage collection and thread metrics;
-- detect basic suspicious memory trends;
-- generate readable diagnostic reports.
+External JVM monitoring is not enabled yet. The next technical milestone is to investigate safe local attach/JMX access for a selected Java process.
 
-Current milestone:
+---
 
-- local dashboard starts on `127.0.0.1:8787`;
-- a shared Vaadin application layout provides sidebar navigation;
-- `/processes` lists and filters local Java processes through the Java `ProcessHandle` API, including self-process detection and process detail navigation;
-- `/metrics/current` shows lightweight JVM metrics, including memory, threads, class loading and garbage collection data for the Javacup process itself;
-- `/metrics/samples` shows recent in-memory metric samples collected every 2 seconds.
+## Current features
+
+- Local Vaadin dashboard running on `127.0.0.1:8787`
+- Shared application layout with sidebar navigation
+- Local Java process discovery through the Java `ProcessHandle` API
+- Process filtering by PID, application name, type, command or arguments
+- Self-process detection
+- Process detail page placeholder at `/processes/{pid}`
+- Current JVM memory metrics for the Javacup process
+- Current JVM thread metrics
+- Current JVM class loading metrics
+- Current JVM garbage collection metrics
+- In-memory JVM metric sampling every 2 seconds
+- Recent metric samples table
+
+---
+
+## Available pages
+
+| Page | Description |
+| --- | --- |
+| `/` | Dashboard home |
+| `/processes` | Local Java process discovery and filtering |
+| `/processes/{pid}` | Selected process detail placeholder |
+| `/metrics/current` | Current JVM metrics for the Javacup process |
+| `/metrics/samples` | Recent in-memory JVM metric samples |
 
 ---
 
@@ -51,35 +68,41 @@ The goal is to provide a clear, local and developer-friendly diagnostic assistan
 
 ---
 
-## Current architecture
-
-The project is organized as a Maven multi-module application.
-
-```text
-javacup/
-  javacup-core/
-  javacup-dashboard/
-  docs/
-  scripts/
-```
-
-Planned modules:
-
-```text
-javacup-collector
-javacup-analyzer
-javacup-report
-javacup-storage
-javacup-agent
-javacup-demo-apps
-```
-
----
-
 ## Requirements
+
+For development:
 
 - Java 21
 - Maven 3.8+
+- Git
+
+Recommended:
+
+- VSCodium or VS Code with Java support
+- A modern browser
+
+---
+
+## Installation for development
+
+Clone the repository:
+
+```bash
+git clone git@github.com:lucamezzolla/javacup.git
+cd javacup
+```
+
+Switch to the development branch:
+
+```bash
+git checkout development
+```
+
+Build the project:
+
+```bash
+mvn -q -DskipTests package
+```
 
 ---
 
@@ -97,8 +120,89 @@ Then open:
 http://127.0.0.1:8787
 ```
 
-By default, Javacup is intended to run locally.
-The dashboard should not be exposed publicly unless explicitly configured and secured.
+The dashboard binds to localhost by default.
+
+```properties
+server.address=127.0.0.1
+server.port=8787
+```
+
+This is intentional: Javacup is designed to be local-first and should not be exposed publicly unless explicitly configured and secured.
+
+---
+
+## Development workflow
+
+The project currently uses the `development` branch as the active working branch.
+
+Recommended workflow:
+
+```bash
+git status
+mvn -q -DskipTests package
+./scripts/run-dashboard.sh
+git add .
+git commit -m "Describe the change"
+git push
+```
+
+Release tags will be created only when the project reaches meaningful milestones.
+
+---
+
+## Current architecture
+
+The project is organized as a Maven multi-module application.
+
+```text
+javacup/
+  javacup-core/
+  javacup-dashboard/
+  docs/
+  scripts/
+```
+
+Current modules:
+
+| Module | Purpose |
+| --- | --- |
+| `javacup-core` | Shared models and core data structures |
+| `javacup-dashboard` | Spring Boot and Vaadin local dashboard |
+
+Planned modules:
+
+```text
+javacup-collector
+javacup-analyzer
+javacup-report
+javacup-storage
+javacup-agent
+javacup-demo-apps
+```
+
+---
+
+## Technical notes
+
+Current metrics are collected from the Javacup JVM itself using standard Java MXBeans:
+
+- `MemoryMXBean`
+- `GarbageCollectorMXBean`
+- `ThreadMXBean`
+- `ClassLoadingMXBean`
+- `RuntimeMXBean`
+
+Local process discovery currently uses:
+
+- `ProcessHandle`
+- `ProcessHandle.Info`
+
+Reading metrics from an external Java process will require a later milestone based on one or more of:
+
+- local JMX
+- Attach API
+- `jcmd` fallback
+- optional Java Agent
 
 ---
 
@@ -108,13 +212,23 @@ The dashboard should not be exposed publicly unless explicitly configured and se
 
 - Local Vaadin dashboard
 - Java process discovery
+- Selected process detail page
 - Basic JVM memory metrics
 - GC and thread metrics
+- In-memory metric sampling
 - First diagnostic warnings
 - HTML/JSON report export
 - Demo applications with controlled leaks
 
-### 0.2.x — Diagnostic engine
+### 0.2.x — External process monitoring
+
+- Safe local attach/JMX investigation
+- Connect to a selected Java process
+- Read memory, GC and thread metrics from the selected process
+- Handle permission and compatibility errors clearly
+- Add monitoring session concept
+
+### 0.3.x — Diagnostic engine
 
 - Post-GC baseline analysis
 - GC pressure detection
@@ -123,12 +237,27 @@ The dashboard should not be exposed publicly unless explicitly configured and se
 - Severity scoring
 - Better report explanations
 
-### 0.3.x — JFR support
+### 0.4.x — JFR support
 
 - Start and stop JFR recordings
 - Import `.jfr` files
 - Summarize GC and allocation events
 - Export JFR-based diagnostic reports
+
+---
+
+## Security and privacy
+
+Javacup is local-first.
+
+By default:
+
+- the dashboard runs only on `127.0.0.1`;
+- no data is uploaded automatically;
+- no telemetry is sent;
+- diagnostic data stays on the local machine.
+
+Future export and upload features should include clear user consent and report sanitization options.
 
 ---
 
