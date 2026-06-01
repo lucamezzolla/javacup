@@ -23,6 +23,11 @@ The first goal is to build a small, reliable local MVP:
 - detect basic suspicious memory trends;
 - generate readable diagnostic reports.
 
+Current milestone:
+
+- local dashboard starts on `127.0.0.1:8787`;
+- `/processes` lists local Java processes through the Java `ProcessHandle` API.
+
 ---
 
 ## Why Javacup?
