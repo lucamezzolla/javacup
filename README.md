@@ -24,7 +24,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 ## Current features
 
 - Local Vaadin dashboard running on `127.0.0.1:8787`
-- Shared application layout with sidebar navigation
+- Shared application layout with sidebar navigation and branded header styling
 - Local Java process discovery through the Java `ProcessHandle` API
 - Process filtering by PID, application name, type, command or arguments
 - Compact process table with shortened arguments and tooltip details
