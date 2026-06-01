@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -118,6 +119,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Div rawHeapInfo = new Div();
     private final Div uptimeInfo = new Div();
     private final Div reportPreview = new Div();
+    private final Dialog reportPreviewDialog = new Dialog();
+    private final Div reportPreviewDialogContent = new Div();
     private final Anchor downloadReportLink = new Anchor();
 
     private Long selectedPid;
@@ -165,6 +168,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         configureDiagnosticsGrid();
         configureSamplesGrid();
+        configureReportPreviewDialog();
         styleHeapTrendChart();
 
         styleTechnicalBlock(rawHeapInfo);
@@ -203,7 +207,6 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo),
-                section("Report preview", new Paragraph("Readable preview of the report data."), reportPreview),
                 bottomSpacer()
         );
     }
@@ -240,6 +243,31 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         selectedPid = processId;
         sessionStopped = false;
         showProcess(processId);
+    }
+
+
+    private void configureReportPreviewDialog() {
+        reportPreviewDialog.setHeaderTitle("External monitoring report preview");
+        reportPreviewDialog.setWidth("900px");
+        reportPreviewDialog.setMaxWidth("95vw");
+
+        reportPreviewDialogContent.setWidthFull();
+        reportPreviewDialogContent.getStyle()
+                .set("white-space", "pre-wrap")
+                .set("overflow-wrap", "anywhere")
+                .set("word-break", "break-word")
+                .set("max-height", "70vh")
+                .set("overflow", "auto")
+                .set("padding", "var(--lumo-space-m)")
+                .set("border", "1px solid var(--lumo-contrast-20pct)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("font-family", "monospace");
+
+        Button closeButton = new Button("Close", event -> reportPreviewDialog.close());
+
+        reportPreviewDialog.add(reportPreviewDialogContent);
+        reportPreviewDialog.getFooter().add(closeButton);
     }
 
     private void configureDiagnosticsGrid() {
@@ -397,8 +425,10 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             return;
         }
 
-        reportPreview.setText(reportService.createReadablePreview(report));
-        Notification.show("Report preview updated.");
+        String preview = reportService.createReadablePreview(report);
+        reportPreview.setText(preview);
+        reportPreviewDialogContent.setText(preview);
+        reportPreviewDialog.open();
     }
 
     private void stopSession() {

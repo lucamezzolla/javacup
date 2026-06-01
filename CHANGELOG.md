@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Report preview dialog for external monitoring reports.
 - Tests for external heap trend diagnostics and sample summaries.
 - Parser tests for external heap and VM uptime parsing.
 - Structured external VM uptime parsed from `jcmd VM.uptime`.
