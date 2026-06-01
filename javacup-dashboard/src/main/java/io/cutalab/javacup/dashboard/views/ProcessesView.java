@@ -34,10 +34,10 @@ public class ProcessesView extends VerticalLayout {
 
         H1 title = new H1("Java processes");
         Paragraph description = new Paragraph(
-                "This page lists local Java processes detected through the Java ProcessHandle API. Use the filter to search by PID, application name, command or arguments."
+                "This page lists local Java processes detected through the Java ProcessHandle API. Use the filter to search by PID, application name, process type, command or arguments."
         );
 
-        filterField.setPlaceholder("Filter by PID, jar name, command or arguments");
+        filterField.setPlaceholder("Filter by PID, jar name, type, command or arguments");
         filterField.setClearButtonVisible(true);
         filterField.setWidthFull();
         filterField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -67,6 +67,11 @@ public class ProcessesView extends VerticalLayout {
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
+        grid.addColumn(JavaProcessInfo::processType)
+                .setHeader("Type")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
         grid.addColumn(JavaProcessInfo::displayName)
                 .setHeader("Command")
                 .setAutoWidth(true)
@@ -77,8 +82,13 @@ public class ProcessesView extends VerticalLayout {
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
-        grid.addComponentColumn(process -> new Button("Monitor later", event ->
-                        Notification.show("Monitoring process " + process.pid() + " will be added in a later step.")))
+        grid.addComponentColumn(process -> new Button(process.currentProcess() ? "Self metrics" : "Monitor later", event -> {
+                    if (process.currentProcess()) {
+                        getUI().ifPresent(ui -> ui.navigate("metrics/current"));
+                    } else {
+                        Notification.show("Monitoring process " + process.pid() + " will be added in a later step.");
+                    }
+                }))
                 .setHeader("Action")
                 .setAutoWidth(true)
                 .setFlexGrow(0);

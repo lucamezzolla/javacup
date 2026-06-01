@@ -10,10 +10,15 @@ import java.util.Optional;
 @Service
 public class LocalJavaProcessService {
 
+    private final long currentPid = ProcessHandle.current().pid();
+
     public List<JavaProcessInfo> findJavaProcesses() {
         return ProcessHandle.allProcesses()
                 .flatMap(process -> toJavaProcessInfo(process).stream())
-                .sorted(Comparator.comparing(JavaProcessInfo::applicationName).thenComparingLong(JavaProcessInfo::pid))
+                .sorted(Comparator
+                        .comparing(JavaProcessInfo::currentProcess).reversed()
+                        .thenComparing(JavaProcessInfo::applicationName)
+                        .thenComparingLong(JavaProcessInfo::pid))
                 .toList();
     }
 
@@ -28,7 +33,8 @@ public class LocalJavaProcessService {
         return Optional.of(new JavaProcessInfo(
                 process.pid(),
                 command.orElse(""),
-                info.arguments().map(List::of).orElseGet(List::of)
+                info.arguments().map(List::of).orElseGet(List::of),
+                process.pid() == currentPid
         ));
     }
 

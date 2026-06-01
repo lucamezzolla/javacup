@@ -7,8 +7,13 @@ import java.util.Optional;
 public record JavaProcessInfo(
         long pid,
         String command,
-        List<String> arguments
+        List<String> arguments,
+        boolean currentProcess
 ) {
+
+    public String processType() {
+        return currentProcess ? "Self" : "Java application";
+    }
 
     public String displayName() {
         if (command == null || command.isBlank()) {
@@ -59,7 +64,8 @@ public record JavaProcessInfo(
         return String.valueOf(pid).contains(normalizedFilter)
                 || safeLower(command).contains(normalizedFilter)
                 || safeLower(argumentsAsText()).contains(normalizedFilter)
-                || safeLower(applicationName()).contains(normalizedFilter);
+                || safeLower(applicationName()).contains(normalizedFilter)
+                || safeLower(processType()).contains(normalizedFilter);
     }
 
     private Optional<String> findJarArgument() {
