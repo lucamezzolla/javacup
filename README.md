@@ -49,6 +49,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - External heap summary parsed from `jcmd GC.heap_info`
 - Structured external VM uptime parsed from `jcmd VM.uptime`
 - Parser tests for external heap and VM uptime parsing
+- Tests for external heap trend diagnostics and sample summaries
 - External monitoring session model
 - Auto-refreshing external process metrics
 - In-memory external metric samples
