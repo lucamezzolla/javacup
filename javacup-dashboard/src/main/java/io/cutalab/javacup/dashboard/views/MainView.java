@@ -9,7 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import io.cutalab.javacup.core.AppInfo;
 
-@Route("")
+@Route(value = "", layout = MainLayout.class)
 public class MainView extends VerticalLayout {
 
     public MainView() {
@@ -20,7 +20,7 @@ public class MainView extends VerticalLayout {
         H1 title = new H1(AppInfo.NAME);
         Paragraph tagline = new Paragraph(AppInfo.TAGLINE);
         Paragraph description = new Paragraph(
-                "Local-first JVM memory diagnostics. The current milestone introduces basic JVM metrics."
+                "Javacup is a local-first JVM diagnostic tool. The current milestone focuses on process discovery and lightweight JVM metrics."
         );
 
         H2 currentMilestone = new H2("Current milestone");

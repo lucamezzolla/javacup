@@ -15,7 +15,7 @@ import io.cutalab.javacup.dashboard.CurrentJvmMetricsService;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-@Route("metrics/current")
+@Route(value = "metrics/current", layout = MainLayout.class)
 public class CurrentJvmMetricsView extends VerticalLayout {
 
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter
@@ -63,7 +63,7 @@ public class CurrentJvmMetricsView extends VerticalLayout {
         add(
                 title,
                 description,
-                new HorizontalLayout(refreshButton, backButton),
+                new HorizontalLayout(refreshButton),
                 section("Runtime", timestamp, uptime),
                 section("Heap memory", heapUsed, heapCommitted, heapMax, heapUsage),
                 section("Non-heap memory", nonHeapUsed, nonHeapCommitted, nonHeapMax),

@@ -11,7 +11,7 @@ import com.vaadin.flow.router.Route;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
 
-@Route("processes")
+@Route(value = "processes", layout = MainLayout.class)
 public class ProcessesView extends VerticalLayout {
 
     private final LocalJavaProcessService processService;
@@ -30,9 +30,7 @@ public class ProcessesView extends VerticalLayout {
         );
 
         Button refreshButton = new Button("Refresh", event -> refresh());
-        Button backButton = new Button("Back to dashboard", event -> getUI().ifPresent(ui -> ui.navigate("")));
-
-        HorizontalLayout actions = new HorizontalLayout(refreshButton, backButton);
+        HorizontalLayout actions = new HorizontalLayout(refreshButton);
 
         configureGrid();
 
