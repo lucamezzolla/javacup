@@ -30,7 +30,7 @@ Current focus:
 - clean UI foundations;
 - readable documentation.
 
-External JVM monitoring is being introduced progressively. Javacup can currently run basic local `jcmd` probes against a selected Java process, including VM version, heap information and VM uptime.
+External JVM monitoring is being introduced progressively. Javacup can currently run local `jcmd` probes against a selected Java process, parse a first heap summary, collect in-memory samples, show basic diagnostics and generate a JSON report.
 
 ---
 
@@ -60,6 +60,10 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - External sample buffer limited to 100 samples per monitoring session
 - Session trend summary for external heap samples
 - External monitoring report model and readable preview
+- JSON download for external monitoring reports
+- Direct JSON download link for external monitoring reports
+- Report download action moved to the top of the external metrics view
+- Improved bottom spacing for dashboard views
 - Bounded external samples grid to avoid page growth during long sessions
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
@@ -80,7 +84,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 | `/processes/{pid}` | Selected process detail and local `jcmd` probes |
 | `/metrics/current` | Current JVM metrics for the Javacup process |
 | `/metrics/samples` | Recent in-memory JVM metric samples |
-| `/metrics/external/{pid}` | Raw external JVM heap and uptime information for a selected process |
+| `/metrics/external/{pid}` | External JVM metrics, diagnostics, session samples and JSON report for a selected process |
 
 ---
 
@@ -197,6 +201,29 @@ http://127.0.0.1:8787/processes
 ```
 
 You should see the demo JAR as a separate Java process.
+
+---
+
+## External monitoring reports
+
+The external metrics page can generate a JSON report for the selected Java process.
+
+The report currently includes:
+
+- monitoring session metadata;
+- selected process PID and status;
+- latest parsed heap information;
+- session trend summary;
+- diagnostic warnings;
+- retained recent samples.
+
+From the external metrics page, use:
+
+```text
+Download JSON report
+```
+
+The report is generated from the latest values available in the page.
 
 ---
 

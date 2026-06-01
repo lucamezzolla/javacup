@@ -8,9 +8,12 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
@@ -40,7 +43,13 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Route(value = "metrics/external", layout = MainLayout.class)
 public class ExternalProcessMetricsView extends VerticalLayout implements HasUrlParameter<Long> {
@@ -59,6 +68,10 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final ExternalMetricSampleService sampleService;
     private final ExternalMetricSampleSummaryService sampleSummaryService;
     private final ExternalMonitoringReportService reportService;
+
+    private final ObjectMapper reportObjectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     private final H1 title = new H1("External process metrics");
     private final Span pid = new Span();
@@ -100,6 +113,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Div rawHeapInfo = new Div();
     private final Div uptimeInfo = new Div();
     private final Div reportPreview = new Div();
+    private final Anchor downloadReportLink = new Anchor();
 
     private Long selectedPid;
     private MonitoringSession currentSession;
@@ -134,6 +148,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         setSizeFull();
         setPadding(true);
         setSpacing(true);
+        getStyle().set("padding-bottom", "var(--lumo-space-xl)");
 
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics(true));
@@ -147,10 +162,26 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         styleTechnicalBlock(uptimeInfo);
         styleTechnicalBlock(reportPreview);
 
+        StreamResource reportResource = new StreamResource("javacup-external-report.json", this::openJsonReportStream);
+        reportResource.setContentType("application/json");
+
+        downloadReportLink.setText("Download JSON report");
+        downloadReportLink.setHref(reportResource);
+        downloadReportLink.getElement().setAttribute("download", true);
+        downloadReportLink.setVisible(true);
+        downloadReportLink.getStyle()
+                .set("display", "inline-flex")
+                .set("align-items", "center")
+                .set("padding", "var(--lumo-space-xs) var(--lumo-space-m)")
+                .set("border", "1px solid var(--lumo-primary-color)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("text-decoration", "none")
+                .set("font-weight", "600");
+
         add(
                 title,
                 new Paragraph("This page reads external JVM information from a selected Java process using local JDK diagnostic commands."),
-                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton),
+                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, downloadReportLink),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
@@ -161,7 +192,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo),
-                section("Report preview", new Paragraph("Readable preview of the report data. JSON download will be added in the next step."), reportPreview)
+                section("Report preview", new Paragraph("Readable preview of the report data."), reportPreview),
+                bottomSpacer()
         );
     }
 
@@ -307,19 +339,49 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         }
     }
 
-    private void previewReport() {
+
+    private ByteArrayInputStream openJsonReportStream() {
+        ExternalMonitoringReport report = createCurrentReport();
+
+        try {
+            String json;
+
+            if (report == null) {
+                json = "{\\n  \\\"error\\\" : \\\"No report data available yet\\\"\\n}\\n";
+            } else {
+                json = reportObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(report);
+            }
+
+            return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        } catch (JsonProcessingException exception) {
+            String safeMessage = exception.getMessage() == null ? "unknown" : exception.getMessage().replace("\\\"", "\\\\\\\"");
+            String json = "{\\n  \\\"error\\\" : \\\"" + safeMessage + "\\\"\\n}\\n";
+            return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private ExternalMonitoringReport createCurrentReport() {
         if (currentSession == null || latestHeapInfo == null || latestSampleSummary == null) {
-            Notification.show("No report data available yet.");
-            return;
+            return null;
         }
 
-        ExternalMonitoringReport report = reportService.createReport(
+        return reportService.createReport(
                 currentSession,
                 latestHeapInfo,
                 latestSampleSummary,
                 latestDiagnostics,
                 latestSamples
         );
+    }
+
+
+    private void previewReport() {
+        ExternalMonitoringReport report = createCurrentReport();
+
+        if (report == null) {
+            Notification.show("No report data available yet.");
+            return;
+        }
 
         reportPreview.setText(reportService.createReadablePreview(report));
         Notification.show("Report preview updated.");
@@ -403,6 +465,16 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         layout.add(rows);
 
         return layout;
+    }
+
+
+    private Component bottomSpacer() {
+        Hr spacer = new Hr();
+        spacer.getStyle()
+                .set("opacity", "0")
+                .set("margin-top", "var(--lumo-space-l)")
+                .set("margin-bottom", "var(--lumo-space-xl)");
+        return spacer;
     }
 
     private void styleTechnicalBlock(Div block) {
