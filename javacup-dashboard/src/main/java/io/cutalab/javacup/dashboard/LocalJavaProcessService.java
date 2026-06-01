@@ -12,13 +12,13 @@ public class LocalJavaProcessService {
 
     public List<JavaProcessInfo> findJavaProcesses() {
         return ProcessHandle.allProcesses()
-                .map(ProcessHandle::info)
-                .flatMap(info -> toJavaProcessInfo(info).stream())
-                .sorted(Comparator.comparingLong(JavaProcessInfo::pid))
+                .flatMap(process -> toJavaProcessInfo(process).stream())
+                .sorted(Comparator.comparing(JavaProcessInfo::applicationName).thenComparingLong(JavaProcessInfo::pid))
                 .toList();
     }
 
-    private Optional<JavaProcessInfo> toJavaProcessInfo(ProcessHandle.Info info) {
+    private Optional<JavaProcessInfo> toJavaProcessInfo(ProcessHandle process) {
+        ProcessHandle.Info info = process.info();
         Optional<String> command = info.command();
 
         if (command.isEmpty() || !looksLikeJavaCommand(command.get())) {
@@ -26,7 +26,7 @@ public class LocalJavaProcessService {
         }
 
         return Optional.of(new JavaProcessInfo(
-                findPid(info),
+                process.pid(),
                 command.orElse(""),
                 info.arguments().map(List::of).orElseGet(List::of)
         ));
@@ -40,14 +40,8 @@ public class LocalJavaProcessService {
                 || normalized.equals("java")
                 || normalized.equals("java.exe")
                 || normalized.contains("/java-")
-                || normalized.contains("\\java-");
-    }
-
-    private long findPid(ProcessHandle.Info info) {
-        return ProcessHandle.allProcesses()
-                .filter(process -> process.info().equals(info))
-                .findFirst()
-                .map(ProcessHandle::pid)
-                .orElse(-1L);
+                || normalized.contains("\\java-")
+                || normalized.endsWith("/javaw")
+                || normalized.endsWith("\\javaw.exe");
     }
 }
