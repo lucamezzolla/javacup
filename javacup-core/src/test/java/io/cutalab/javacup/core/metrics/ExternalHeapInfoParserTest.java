@@ -22,7 +22,7 @@ class ExternalHeapInfoParserTest {
         ExternalHeapInfo heapInfo = parser.parse(output);
 
         assertTrue(heapInfo.hasStructuredValues());
-        assertEquals("garbage-first heap   total 129024K, used 5087K [0x0000000085a00000, 0x0000000100000000)", heapInfo.collectorOrHeapType());
+        assertEquals("garbage-first heap", heapInfo.collectorOrHeapType());
         assertEquals(5087L, heapInfo.heapUsedKb());
         assertEquals(129024L, heapInfo.heapTotalKb());
         assertEquals(1138L, heapInfo.metaspaceUsedKb());

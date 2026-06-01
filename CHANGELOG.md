@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- JUnit 5 test setup for core and dashboard modules.
 - Report preview dialog for external monitoring reports.
 - Tests for external heap trend diagnostics and sample summaries.
 - Parser tests for external heap and VM uptime parsing.
@@ -87,6 +88,8 @@ It is not production-ready.
 
 ### Fixed
 
+- Fixed heap type parsing when `GC.heap_info` reports type and values on the same line.
+- Fixed GitHub Actions failures caused by incomplete test dependencies.
 - Removed generated Vaadin frontend files from Git language statistics.
 - Fixed GitHub build issue caused by ignored `diagnostics` package.
 - Fixed overly generic `.gitignore` rule for `diagnostics/`.

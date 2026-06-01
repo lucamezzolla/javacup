@@ -39,12 +39,20 @@ public class ExternalHeapInfoParser {
             if (heapTotalUsed.matches()) {
                 heapTotalKb = parseLong(heapTotalUsed.group(1));
                 heapUsedKb = parseLong(heapTotalUsed.group(2));
+
+                if (collectorOrHeapType.isBlank()) {
+                    collectorOrHeapType = extractHeapType(trimmed);
+                }
             }
 
             Matcher heapUsedTotal = HEAP_USED_TOTAL.matcher(trimmed);
             if (heapUsedTotal.matches()) {
                 heapUsedKb = parseLong(heapUsedTotal.group(1));
                 heapTotalKb = parseLong(heapUsedTotal.group(2));
+
+                if (collectorOrHeapType.isBlank()) {
+                    collectorOrHeapType = extractHeapType(trimmed);
+                }
             }
 
             if (trimmed.toLowerCase(Locale.ROOT).contains("heap")
@@ -99,6 +107,16 @@ public class ExternalHeapInfoParser {
                 && !lower.startsWith("pid:")
                 && !lower.startsWith("command:")
                 && !lower.startsWith("status:");
+    }
+
+    private String extractHeapType(String line) {
+        int totalIndex = line.toLowerCase(Locale.ROOT).indexOf("total");
+
+        if (totalIndex <= 0) {
+            return line;
+        }
+
+        return line.substring(0, totalIndex).trim();
     }
 
     private Long parseLong(String value) {
