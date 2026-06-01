@@ -393,7 +393,7 @@ Every contribution helps improve documentation, testing, safety checks, UI polis
 
 ## License
 
-License to be defined.
+Javacup is licensed under the [Apache License 2.0](LICENSE).
 
 ---
 

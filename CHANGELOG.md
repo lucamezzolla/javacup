@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Apache License 2.0.
 - Local Vaadin dashboard running on `127.0.0.1:8787`.
 - Branded Javacup header with coffee icon.
 - Sidebar navigation.
