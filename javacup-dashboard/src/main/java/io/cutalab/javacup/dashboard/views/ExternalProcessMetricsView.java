@@ -22,10 +22,12 @@ import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
 import io.cutalab.javacup.core.process.ProcessProbeResult;
 import io.cutalab.javacup.core.session.ExternalMetricSample;
+import io.cutalab.javacup.core.session.ExternalMetricSampleSummary;
 import io.cutalab.javacup.core.session.MonitoringSession;
 import io.cutalab.javacup.dashboard.ExternalHeapDiagnosticsService;
 import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleService;
+import io.cutalab.javacup.dashboard.ExternalMetricSampleSummaryService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
 import io.cutalab.javacup.dashboard.ExternalSampleDiagnosticsService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
@@ -50,9 +52,10 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final ExternalProcessProbeService probeService;
     private final ExternalHeapInfoService heapInfoService;
     private final ExternalHeapDiagnosticsService diagnosticsService;
+    private final ExternalSampleDiagnosticsService sampleDiagnosticsService;
     private final MonitoringSessionService monitoringSessionService;
     private final ExternalMetricSampleService sampleService;
-    private final ExternalSampleDiagnosticsService sampleDiagnosticsService;
+    private final ExternalMetricSampleSummaryService sampleSummaryService;
 
     private final H1 title = new H1("External process metrics");
     private final Span pid = new Span();
@@ -81,7 +84,14 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span classSpaceReserved = new Span();
 
     private final Grid<DiagnosticWarning> diagnosticsGrid = new Grid<>(DiagnosticWarning.class, false);
+
     private final Span samplesRetained = new Span("Samples retained: 0 / 100");
+    private final Span sampleCount = new Span("Samples collected: 0");
+    private final Span firstHeapUsed = new Span("First heap used: unavailable");
+    private final Span latestHeapUsed = new Span("Latest heap used: unavailable");
+    private final Span minHeapUsed = new Span("Min heap used: unavailable");
+    private final Span maxHeapUsed = new Span("Max heap used: unavailable");
+    private final Span heapGrowth = new Span("Heap growth: unavailable");
     private final Grid<ExternalMetricSample> samplesGrid = new Grid<>(ExternalMetricSample.class, false);
 
     private final Div rawHeapInfo = new Div();
@@ -97,17 +107,19 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             ExternalProcessProbeService probeService,
             ExternalHeapInfoService heapInfoService,
             ExternalHeapDiagnosticsService diagnosticsService,
+            ExternalSampleDiagnosticsService sampleDiagnosticsService,
             MonitoringSessionService monitoringSessionService,
             ExternalMetricSampleService sampleService,
-            ExternalSampleDiagnosticsService sampleDiagnosticsService
+            ExternalMetricSampleSummaryService sampleSummaryService
     ) {
         this.processService = processService;
         this.probeService = probeService;
         this.heapInfoService = heapInfoService;
         this.diagnosticsService = diagnosticsService;
+        this.sampleDiagnosticsService = sampleDiagnosticsService;
         this.monitoringSessionService = monitoringSessionService;
         this.sampleService = sampleService;
-        this.sampleDiagnosticsService = sampleDiagnosticsService;
+        this.sampleSummaryService = sampleSummaryService;
 
         setSizeFull();
         setPadding(true);
@@ -132,7 +144,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
-                section("Diagnostics", new Paragraph("First rule: HEAP_NEAR_MAX. Trend-based diagnostics will be added later."), diagnosticsGrid),
+                section("Diagnostics", new Paragraph("Rules: HEAP_NEAR_MAX and HEAP_SESSION_GROWING. More trend-based diagnostics will be added later."), diagnosticsGrid),
+                section("Session trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo)
@@ -262,6 +275,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         warnings.addAll(sampleDiagnosticsService.analyze(samples));
         diagnosticsGrid.setItems(warnings);
 
+        updateSampleSummary(sampleSummaryService.summarize(samples));
         samplesRetained.setText("Samples retained: " + samples.size() + " / " + sampleService.maxSamplesPerSession());
         samplesGrid.setItems(samples.reversed());
 
@@ -297,6 +311,15 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         sessionLastUpdatedAt.setText("Last updated at: " + SESSION_TIME_FORMATTER.format(session.lastUpdatedAt()));
     }
 
+    private void updateSampleSummary(ExternalMetricSampleSummary summary) {
+        sampleCount.setText("Samples collected: " + summary.sampleCount());
+        firstHeapUsed.setText("First heap used: " + formatNullableMb(summary.firstHeapUsedMb()));
+        latestHeapUsed.setText("Latest heap used: " + formatNullableMb(summary.latestHeapUsedMb()));
+        minHeapUsed.setText("Min heap used: " + formatNullableMb(summary.minHeapUsedMb()));
+        maxHeapUsed.setText("Max heap used: " + formatNullableMb(summary.maxHeapUsedMb()));
+        heapGrowth.setText("Heap growth: " + formatSignedMb(summary.growthMb()));
+    }
+
     private void updateStructuredHeapInfo(ExternalHeapInfo heapInfo) {
         heapType.setText("Heap type: " + emptyFallback(heapInfo.collectorOrHeapType()));
         heapUsed.setText("Heap used: " + formatMb(heapInfo.heapUsedMb()));
@@ -318,6 +341,18 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private String formatNullableMb(Long value) {
         return value == null ? "unavailable" : value + " MB";
+    }
+
+    private String formatSignedMb(Long value) {
+        if (value == null) {
+            return "unavailable";
+        }
+
+        if (value > 0) {
+            return "+" + value + " MB";
+        }
+
+        return value + " MB";
     }
 
     private String emptyFallback(String value) {

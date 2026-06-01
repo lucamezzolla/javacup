@@ -58,6 +58,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - In-memory monitoring session for external process metrics
 - Recent in-memory samples for external monitored processes
 - External sample buffer limited to 100 samples per monitoring session
+- Session trend summary for external heap samples
 - Bounded external samples grid to avoid page growth during long sessions
 - Current JVM memory metrics for the Javacup process
 - Current JVM thread metrics
