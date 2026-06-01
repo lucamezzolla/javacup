@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 @Service
 public class ExternalMetricSampleService {
 
-    private static final int MAX_SAMPLES_PER_SESSION = 300;
+    private static final int MAX_SAMPLES_PER_SESSION = 100;
 
     private final ConcurrentMap<UUID, List<ExternalMetricSample>> samplesBySession = new ConcurrentHashMap<>();
 
@@ -36,7 +36,7 @@ public class ExternalMetricSampleService {
         synchronized (samples) {
             samples.add(sample);
 
-            if (samples.size() > MAX_SAMPLES_PER_SESSION) {
+            while (samples.size() > MAX_SAMPLES_PER_SESSION) {
                 samples.remove(0);
             }
         }
@@ -70,5 +70,9 @@ public class ExternalMetricSampleService {
 
             return Optional.of(samples.get(samples.size() - 1));
         }
+    }
+
+    public int maxSamplesPerSession() {
+        return MAX_SAMPLES_PER_SESSION;
     }
 }

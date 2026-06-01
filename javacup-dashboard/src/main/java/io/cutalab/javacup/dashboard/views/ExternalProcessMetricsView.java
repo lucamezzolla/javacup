@@ -81,6 +81,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span classSpaceReserved = new Span();
 
     private final Grid<DiagnosticWarning> diagnosticsGrid = new Grid<>(DiagnosticWarning.class, false);
+    private final Span samplesRetained = new Span("Samples retained: 0 / 100");
     private final Grid<ExternalMetricSample> samplesGrid = new Grid<>(ExternalMetricSample.class, false);
 
     private final Div rawHeapInfo = new Div();
@@ -132,7 +133,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
                 section("Diagnostics", new Paragraph("First rule: HEAP_NEAR_MAX. Trend-based diagnostics will be added later."), diagnosticsGrid),
-                section("Recent external samples", new Paragraph("In-memory samples collected while this page is open."), samplesGrid),
+                section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo)
         );
@@ -261,6 +262,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         warnings.addAll(sampleDiagnosticsService.analyze(samples));
         diagnosticsGrid.setItems(warnings);
 
+        samplesRetained.setText("Samples retained: " + samples.size() + " / " + sampleService.maxSamplesPerSession());
         samplesGrid.setItems(samples.reversed());
 
         rawHeapInfo.setText(heapInfo.rawOutput());
