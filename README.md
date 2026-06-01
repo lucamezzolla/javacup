@@ -28,7 +28,7 @@ Current milestone:
 - local dashboard starts on `127.0.0.1:8787`;
 - a shared Vaadin application layout provides sidebar navigation;
 - `/processes` lists local Java processes through the Java `ProcessHandle` API;
-- `/metrics/current` shows lightweight JVM metrics for the Javacup process itself.
+- `/metrics/current` shows lightweight JVM metrics, including memory, threads, class loading and garbage collection data for the Javacup process itself.
 
 ---
 
