@@ -2,6 +2,7 @@ package io.cutalab.javacup.dashboard;
 
 import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
+import io.cutalab.javacup.core.metrics.ExternalVmUptime;
 import io.cutalab.javacup.core.report.ExternalMonitoringReport;
 import io.cutalab.javacup.core.session.ExternalMetricSample;
 import io.cutalab.javacup.core.session.ExternalMetricSampleSummary;
@@ -17,6 +18,7 @@ public class ExternalMonitoringReportService {
     public ExternalMonitoringReport createReport(
             MonitoringSession session,
             ExternalHeapInfo latestHeapInfo,
+            ExternalVmUptime latestVmUptime,
             ExternalMetricSampleSummary sampleSummary,
             List<DiagnosticWarning> diagnostics,
             List<ExternalMetricSample> recentSamples
@@ -25,6 +27,7 @@ public class ExternalMonitoringReportService {
                 Instant.now(),
                 session,
                 latestHeapInfo,
+                latestVmUptime,
                 sampleSummary,
                 List.copyOf(diagnostics),
                 List.copyOf(recentSamples)
@@ -44,6 +47,11 @@ public class ExternalMonitoringReportService {
         builder.append("- Status: ").append(report.session().status()).append(System.lineSeparator());
         builder.append("- Started at: ").append(report.session().startedAt()).append(System.lineSeparator());
         builder.append("- Last updated at: ").append(report.session().lastUpdatedAt()).append(System.lineSeparator());
+        builder.append(System.lineSeparator());
+
+        builder.append("VM uptime").append(System.lineSeparator());
+        builder.append("- Uptime: ").append(report.latestVmUptime() == null ? "unavailable" : report.latestVmUptime().displayValue()).append(System.lineSeparator());
+        builder.append("- Uptime seconds: ").append(report.latestVmUptime() == null || report.latestVmUptime().uptimeSeconds() == null ? "unavailable" : report.latestVmUptime().uptimeSeconds()).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
         builder.append("Heap summary").append(System.lineSeparator());

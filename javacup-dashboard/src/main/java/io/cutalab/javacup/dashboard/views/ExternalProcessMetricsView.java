@@ -22,8 +22,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
+import io.cutalab.javacup.core.metrics.ExternalVmUptime;
 import io.cutalab.javacup.core.process.JavaProcessInfo;
-import io.cutalab.javacup.core.process.ProcessProbeResult;
 import io.cutalab.javacup.core.report.ExternalMonitoringReport;
 import io.cutalab.javacup.core.session.ExternalMetricSample;
 import io.cutalab.javacup.core.session.ExternalMetricSampleSummary;
@@ -34,6 +34,7 @@ import io.cutalab.javacup.dashboard.ExternalMetricSampleService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleSummaryService;
 import io.cutalab.javacup.dashboard.ExternalMonitoringReportService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
+import io.cutalab.javacup.dashboard.ExternalVmUptimeService;
 import io.cutalab.javacup.dashboard.ExternalSampleDiagnosticsService;
 import io.cutalab.javacup.dashboard.LocalJavaProcessService;
 import io.cutalab.javacup.dashboard.MonitoringSessionService;
@@ -61,6 +62,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private final LocalJavaProcessService processService;
     private final ExternalProcessProbeService probeService;
+    private final ExternalVmUptimeService uptimeService;
     private final ExternalHeapInfoService heapInfoService;
     private final ExternalHeapDiagnosticsService diagnosticsService;
     private final ExternalSampleDiagnosticsService sampleDiagnosticsService;
@@ -77,6 +79,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span pid = new Span();
     private final Span application = new Span();
     private final Span type = new Span();
+    private final Span vmUptime = new Span("VM uptime: unavailable");
+    private final Span vmUptimeSeconds = new Span("VM uptime seconds: unavailable");
 
     private final Span autoRefreshStatus = new Span("Auto-refresh: waiting for page attach");
     private final Span lastRefresh = new Span("Last refresh: never");
@@ -119,6 +123,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private Long selectedPid;
     private MonitoringSession currentSession;
     private ExternalHeapInfo latestHeapInfo;
+    private ExternalVmUptime latestVmUptime;
     private ExternalMetricSampleSummary latestSampleSummary;
     private List<DiagnosticWarning> latestDiagnostics = List.of();
     private List<ExternalMetricSample> latestSamples = List.of();
@@ -128,6 +133,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     public ExternalProcessMetricsView(
             LocalJavaProcessService processService,
             ExternalProcessProbeService probeService,
+            ExternalVmUptimeService uptimeService,
             ExternalHeapInfoService heapInfoService,
             ExternalHeapDiagnosticsService diagnosticsService,
             ExternalSampleDiagnosticsService sampleDiagnosticsService,
@@ -138,6 +144,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     ) {
         this.processService = processService;
         this.probeService = probeService;
+        this.uptimeService = uptimeService;
         this.heapInfoService = heapInfoService;
         this.diagnosticsService = diagnosticsService;
         this.sampleDiagnosticsService = sampleDiagnosticsService;
@@ -186,6 +193,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, downloadReportLink),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
+                section("Structured VM uptime", vmUptime, vmUptimeSeconds),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
@@ -309,7 +317,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         updateSessionInfo(currentSession);
 
         latestHeapInfo = heapInfoService.readHeapInfo(selectedPid);
-        ProcessProbeResult uptimeResult = probeService.probeVmUptime(selectedPid);
+        latestVmUptime = uptimeService.readUptime(selectedPid);
 
         updateStructuredHeapInfo(latestHeapInfo);
 
@@ -331,7 +339,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         samplesGrid.setItems(latestSamples.reversed());
 
         rawHeapInfo.setText(latestHeapInfo.rawOutput());
-        uptimeInfo.setText(uptimeResult.displayText());
+        updateStructuredVmUptime(latestVmUptime);
+        uptimeInfo.setText(latestVmUptime.rawOutput());
         lastRefresh.setText("Last refresh: " + LocalDateTime.now().format(REFRESH_TIME_FORMATTER));
 
         if (showNotification) {
@@ -372,6 +381,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         return reportService.createReport(
                 currentSession,
                 latestHeapInfo,
+                latestVmUptime,
                 latestSampleSummary,
                 latestDiagnostics,
                 latestSamples
@@ -531,6 +541,12 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         heapTrendChart.getStyle()
                 .set("max-width", "100%")
                 .set("padding-bottom", "var(--lumo-space-s)");
+    }
+
+
+    private void updateStructuredVmUptime(ExternalVmUptime uptime) {
+        vmUptime.setText("VM uptime: " + uptime.displayValue());
+        vmUptimeSeconds.setText("VM uptime seconds: " + (uptime.uptimeSeconds() == null ? "unavailable" : uptime.uptimeSeconds()));
     }
 
     private void updateSampleSummary(ExternalMetricSampleSummary summary) {

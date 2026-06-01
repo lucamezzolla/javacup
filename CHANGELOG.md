@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Structured external VM uptime parsed from `jcmd VM.uptime`.
 - Heap trend chart labels for external samples.
 - Lightweight heap usage trend chart for external samples.
 - Apache License 2.0.
