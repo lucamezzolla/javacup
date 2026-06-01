@@ -8,6 +8,23 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+### Planned
+
+- Basic heap chart for external monitoring sessions.
+- More structured external JVM metrics.
+- Improved report export options.
+- Better diagnostic explanations.
+- GitHub Release packaging.
+
+---
+
+## [0.1.0-alpha.1] - 2026-06-02
+
+First alpha checkpoint for Javacup.
+
+This release is intended for local testing, early feedback and controlled development validation.
+It is not production-ready.
+
 ### Added
 
 - Apache License 2.0.
@@ -51,6 +68,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
   - run instructions;
   - current features;
   - roadmap;
+  - release notes;
   - PayPal support badge;
   - security and privacy notes.
 
@@ -70,25 +88,3 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 - Fixed external metrics lookup to probe by PID even when `ProcessHandle` metadata is unavailable.
 - Fixed external metrics auto-refresh lifecycle.
 - Removed accidental root file named `cd`.
-
----
-
-## [0.1.0-alpha.1] - Planned
-
-This will be the first alpha checkpoint for Javacup.
-
-Expected scope:
-
-- Local JVM dashboard.
-- Java process discovery.
-- External process metrics through local `jcmd`.
-- Basic heap parsing.
-- External monitoring session.
-- In-memory samples.
-- Basic diagnostics.
-- JSON report export.
-- Demo applications.
-- Documentation suitable for early testers.
-
-This release will not be production-ready.
-It will be intended for local testing, feedback and controlled development validation.
