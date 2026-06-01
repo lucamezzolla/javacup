@@ -108,6 +108,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span minHeapUsed = new Span("Min heap used: unavailable");
     private final Span maxHeapUsed = new Span("Max heap used: unavailable");
     private final Span heapGrowth = new Span("Heap growth: unavailable");
+    private final Div heapTrendChart = new Div();
     private final Grid<ExternalMetricSample> samplesGrid = new Grid<>(ExternalMetricSample.class, false);
 
     private final Div rawHeapInfo = new Div();
@@ -157,6 +158,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         configureDiagnosticsGrid();
         configureSamplesGrid();
+        styleHeapTrendChart();
 
         styleTechnicalBlock(rawHeapInfo);
         styleTechnicalBlock(uptimeInfo);
@@ -189,6 +191,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
                 section("Diagnostics", new Paragraph("Rules: HEAP_NEAR_MAX and HEAP_SESSION_GROWING. More trend-based diagnostics will be added later."), diagnosticsGrid),
                 section("Session trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
+                section("Heap usage trend", new Paragraph("Lightweight chart based on the latest retained external samples."), heapTrendChart),
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo),
@@ -323,6 +326,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         latestSampleSummary = sampleSummaryService.summarize(latestSamples);
         updateSampleSummary(latestSampleSummary);
+        renderHeapTrendChart(latestSamples);
         samplesRetained.setText("Samples retained: " + latestSamples.size() + " / " + sampleService.maxSamplesPerSession());
         samplesGrid.setItems(latestSamples.reversed());
 
@@ -404,6 +408,74 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         sessionStatus.setText("Status: " + session.status());
         sessionStartedAt.setText("Started at: " + SESSION_TIME_FORMATTER.format(session.startedAt()));
         sessionLastUpdatedAt.setText("Last updated at: " + SESSION_TIME_FORMATTER.format(session.lastUpdatedAt()));
+    }
+
+
+    private void renderHeapTrendChart(List<ExternalMetricSample> samples) {
+        heapTrendChart.removeAll();
+
+        List<ExternalMetricSample> visibleSamples = samples.stream()
+                .filter(sample -> sample.heapUsedMb() != null)
+                .skip(Math.max(0, samples.size() - 40))
+                .toList();
+
+        if (visibleSamples.isEmpty()) {
+            heapTrendChart.setText("No heap samples available yet.");
+            return;
+        }
+
+        long maxHeapUsed = visibleSamples.stream()
+                .map(ExternalMetricSample::heapUsedMb)
+                .filter(value -> value != null)
+                .max(Long::compareTo)
+                .orElse(1L);
+
+        HorizontalLayout bars = new HorizontalLayout();
+        bars.setPadding(false);
+        bars.setSpacing(false);
+        bars.setWidthFull();
+        bars.setHeight("140px");
+        bars.setAlignItems(Alignment.END);
+        bars.getStyle()
+                .set("gap", "3px")
+                .set("border", "1px solid var(--lumo-contrast-20pct)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("padding", "var(--lumo-space-s)")
+                .set("background", "var(--lumo-contrast-5pct)");
+
+        for (ExternalMetricSample sample : visibleSamples) {
+            long heapUsed = sample.heapUsedMb();
+            int heightPercentage = maxHeapUsed <= 0
+                    ? 1
+                    : Math.max(4, (int) Math.round(heapUsed * 100.0 / maxHeapUsed));
+
+            Div bar = new Div();
+            bar.getStyle()
+                    .set("height", heightPercentage + "%")
+                    .set("min-width", "6px")
+                    .set("flex", "1")
+                    .set("border-radius", "var(--lumo-border-radius-s)")
+                    .set("background", "var(--lumo-primary-color-50pct)");
+
+            bar.getElement().setAttribute("title", heapUsed + " MB at " + SAMPLE_TIME_FORMATTER.format(sample.timestamp()));
+
+            bars.add(bar);
+        }
+
+        Span caption = new Span("Showing latest " + visibleSamples.size() + " samples. Max visible heap used: " + maxHeapUsed + " MB.");
+        caption.getStyle()
+                .set("display", "block")
+                .set("margin-top", "var(--lumo-space-xs)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        heapTrendChart.add(bars, caption);
+    }
+
+    private void styleHeapTrendChart() {
+        heapTrendChart.setWidthFull();
+        heapTrendChart.getStyle()
+                .set("max-width", "100%")
+                .set("padding-bottom", "var(--lumo-space-s)");
     }
 
     private void updateSampleSummary(ExternalMetricSampleSummary summary) {

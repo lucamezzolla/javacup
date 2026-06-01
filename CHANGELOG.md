@@ -10,7 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Planned
 
-- Basic heap chart for external monitoring sessions.
+- More advanced heap charts for external monitoring sessions.
 - More structured external JVM metrics.
 - Improved report export options.
 - Better diagnostic explanations.
@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Lightweight heap usage trend chart for external samples.
 - Apache License 2.0.
 - Local Vaadin dashboard running on `127.0.0.1:8787`.
 - Branded Javacup header with coffee icon.
