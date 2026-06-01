@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Tests for external sample buffer retention.
 - Tests for current external heap diagnostics.
 - Probe status explanation for external JVM metrics.
 - JUnit 5 test setup for core and dashboard modules.

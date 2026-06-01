@@ -52,6 +52,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - Parser tests for external heap and VM uptime parsing
 - Tests for external heap trend diagnostics and sample summaries
 - Tests for current external heap diagnostics
+- Tests for external sample buffer retention
 - JUnit 5 test setup for core and dashboard modules
 - External monitoring session model
 - Auto-refreshing external process metrics
