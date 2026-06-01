@@ -1,0 +1,62 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+replay_pid*
+
+# Vaadin / frontend generated files
+node_modules/
+frontend/generated/
+src/main/bundles/
+src/main/dev-bundle/
+*/src/main/bundles/
+*/src/main/dev-bundle/
+*/frontend/generated/
+
+# Spring Boot local configuration
+application-local.properties
+application-dev.properties
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+bin/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Reports and local diagnostic output
+reports/generated/
+diagnostics/
+*.jfr
+*.hprof
+*.heapdump
+*.dump
+
+# Local databases
+*.mv.db
+*.trace.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.*
