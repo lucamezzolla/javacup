@@ -1,6 +1,7 @@
 package io.cutalab.javacup.dashboard.views;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -34,6 +35,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Locale;
@@ -422,6 +424,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createReportHealthScoreSection(older, newer));
             content.add(createMemoryRiskNotesSection(older, newer));
             content.add(createJcmdStatusNotesSection(older, newer));
+            createUnsupportedParserFormatNoteSection(older, newer).ifPresent(content::add);
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
@@ -462,6 +465,47 @@ public class ArchivedReportsView extends VerticalLayout {
 
 
 
+
+
+    private Optional<Component> createUnsupportedParserFormatNoteSection(JsonNode older, JsonNode newer) {
+        boolean olderUnsupported = hasDiagnosticCode(older, "HEAP_PARSER_UNSUPPORTED_FORMAT");
+        boolean newerUnsupported = hasDiagnosticCode(newer, "HEAP_PARSER_UNSUPPORTED_FORMAT");
+
+        if (!olderUnsupported && !newerUnsupported) {
+            return Optional.empty();
+        }
+
+        StringBuilder notes = new StringBuilder();
+        notes.append("The heap probe succeeded, but Javacup could not extract structured heap values from one of the compared reports. ");
+        notes.append("This usually means the target JVM returned a GC.heap_info format that is not supported by the parser yet. ");
+        notes.append("The raw output is still available in the report and can be used to improve parser support.");
+
+        if (olderUnsupported && newerUnsupported) {
+            notes.append(System.lineSeparator()).append("Affected reports: older and newer.");
+        } else if (olderUnsupported) {
+            notes.append(System.lineSeparator()).append("Affected report: older.");
+        } else {
+            notes.append(System.lineSeparator()).append("Affected report: newer.");
+        }
+
+        return Optional.of(createTextSection("Unsupported heap parser format", notes.toString()));
+    }
+
+    private boolean hasDiagnosticCode(JsonNode report, String code) {
+        JsonNode diagnostics = report.path("diagnostics");
+
+        if (!diagnostics.isArray()) {
+            return false;
+        }
+
+        for (JsonNode diagnostic : diagnostics) {
+            if (code.equals(firstTextValue(diagnostic, "code"))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private VerticalLayout createJcmdStatusNotesSection(JsonNode older, JsonNode newer) {
         String olderHeapRaw = firstTextValue(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "rawOutput");
