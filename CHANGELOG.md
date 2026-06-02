@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Archived reports filters by file/path and local-time date range.
 - Structured archived report details dialog.
 
 ### Planned

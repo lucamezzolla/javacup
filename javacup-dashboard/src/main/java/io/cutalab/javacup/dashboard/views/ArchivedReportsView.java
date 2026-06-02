@@ -2,6 +2,7 @@ package io.cutalab.javacup.dashboard.views;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import io.cutalab.javacup.dashboard.LocalArchivedReport;
@@ -25,18 +27,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneId;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 @Route(value = "reports/archived", layout = MainLayout.class)
 public class ArchivedReportsView extends VerticalLayout {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault());
+    private static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
+            .withZone(LOCAL_ZONE);
 
     private final LocalReportArchiveService archiveService;
     private final Grid<LocalArchivedReport> reportsGrid = new Grid<>(LocalArchivedReport.class, false);
     private final Paragraph summary = new Paragraph();
+    private final TextField fileSearchField = new TextField("File or path contains");
+    private final DateTimePicker fromDateTimePicker = new DateTimePicker("From");
+    private final DateTimePicker toDateTimePicker = new DateTimePicker("To");
 
     public ArchivedReportsView(LocalReportArchiveService archiveService) {
         this.archiveService = archiveService;
@@ -50,18 +59,47 @@ public class ArchivedReportsView extends VerticalLayout {
         Paragraph description = new Paragraph(
                 "Local JSON reports archived from external JVM monitoring sessions. Files are stored under "
                         + archiveService.archiveDirectory().toAbsolutePath()
-                        + "."
+                        + ". Date filters use the local system timezone: "
+                        + LOCAL_ZONE
+                        + ". Dates are displayed in an ISO-like format with offset."
         );
 
         Button refreshButton = new Button("Refresh", event -> refreshReports());
+        Button applyFiltersButton = new Button("Apply filters", event -> refreshReports());
+        Button clearFiltersButton = new Button("Clear filters", event -> clearFilters());
 
+        configureFilters();
         configureGrid();
 
-        add(title, description, refreshButton, summary, reportsGrid);
+        HorizontalLayout filters = new HorizontalLayout(
+                fileSearchField,
+                fromDateTimePicker,
+                toDateTimePicker,
+                applyFiltersButton,
+                clearFiltersButton,
+                refreshButton
+        );
+        filters.setWidthFull();
+        filters.setAlignItems(Alignment.END);
+        filters.getStyle().set("flex-wrap", "wrap");
+
+        add(title, description, filters, summary, reportsGrid);
 
         refreshReports();
     }
 
+    private void configureFilters() {
+        fileSearchField.setWidth("320px");
+        fileSearchField.setPlaceholder("Example: pid-1234 or /reports/");
+        fileSearchField.setClearButtonVisible(true);
+        fileSearchField.addValueChangeListener(event -> refreshReports());
+
+        fromDateTimePicker.setWidth("260px");
+        fromDateTimePicker.setStep(java.time.Duration.ofSeconds(1));
+
+        toDateTimePicker.setWidth("260px");
+        toDateTimePicker.setStep(java.time.Duration.ofSeconds(1));
+    }
     private void configureGrid() {
         reportsGrid.setWidthFull();
         reportsGrid.setAllRowsVisible(true);
@@ -254,12 +292,49 @@ public class ArchivedReportsView extends VerticalLayout {
         return link;
     }
 
+    private void clearFilters() {
+        fileSearchField.clear();
+        fromDateTimePicker.clear();
+        toDateTimePicker.clear();
+        refreshReports();
+    }
+
+    private List<LocalArchivedReport> applyFilters(List<LocalArchivedReport> reports) {
+        String query = fileSearchField.getValue();
+        String normalizedQuery = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        Instant from = toInstant(fromDateTimePicker.getValue());
+        Instant to = toInstant(toDateTimePicker.getValue());
+
+        return reports.stream()
+                .filter(report -> matchesQuery(report, normalizedQuery))
+                .filter(report -> from == null || !report.lastModifiedAt().isBefore(from))
+                .filter(report -> to == null || !report.lastModifiedAt().isAfter(to))
+                .toList();
+    }
+
+    private boolean matchesQuery(LocalArchivedReport report, String normalizedQuery) {
+        if (normalizedQuery.isBlank()) {
+            return true;
+        }
+
+        return report.fileName().toLowerCase(Locale.ROOT).contains(normalizedQuery)
+                || report.absolutePath().toLowerCase(Locale.ROOT).contains(normalizedQuery);
+    }
+
+    private Instant toInstant(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+
+        return localDateTime.atZone(LOCAL_ZONE).toInstant();
+    }
     private void refreshReports() {
         try {
             List<LocalArchivedReport> reports = archiveService.listReports();
+            List<LocalArchivedReport> filteredReports = applyFilters(reports);
 
-            reportsGrid.setItems(reports);
-            summary.setText("Archived reports: " + reports.size());
+            reportsGrid.setItems(filteredReports);
+            summary.setText("Archived reports: " + filteredReports.size() + " of " + reports.size());
         } catch (IllegalStateException exception) {
             reportsGrid.setItems(List.of());
             summary.setText("Archived reports: unavailable");

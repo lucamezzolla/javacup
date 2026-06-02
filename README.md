@@ -83,6 +83,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - Archived reports view for local JSON report history
 - Archived report preview directly from the dashboard
 - Structured archived report details dialog
+- Archived reports filters by file/path and local-time date range
 - Downloadable archived report links with truncated path display
 - Archived reports grid with full path display and icon download action
 - Report metadata with application name, version, project URL and generation timestamp
