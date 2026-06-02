@@ -17,13 +17,13 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 ## Project status
 
-Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.1.0-alpha.3`.
+Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.1.0-alpha.4`.
 
 Current development version: `0.2.0-SNAPSHOT`.
 
 ## 0.1.x alpha line closure
 
-The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.3`.
+The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.4`.
 
 This line includes:
 
@@ -510,7 +510,7 @@ Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 
 ## Current status
 
-The `0.1.x` alpha line is considered the first local MVP line. It is closed by `v0.1.0-alpha.3`, which includes the local dashboard, Java process discovery, external JVM monitoring through `jcmd`, JSON reports, local report archive, report search, preview/download, and advanced archived report comparison diagnostics.
+The `0.1.x` alpha line is considered the first local MVP line. It is closed by `v0.1.0-alpha.4`, which includes the local dashboard, Java process discovery, external JVM monitoring through `jcmd`, JSON reports, local report archive, report search, preview/download, and advanced archived report comparison diagnostics.
 
 - Probe status UI based on structured failure kind.
 - Probe failure kind converted into diagnostics.

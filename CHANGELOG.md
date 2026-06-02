@@ -21,7 +21,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Closed by
 
-- `v0.1.0-alpha.3` closes the first local MVP alpha line.
+- `v0.1.0-alpha.4` closes the first local MVP alpha line.
 
 ### Included
 
