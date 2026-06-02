@@ -65,6 +65,8 @@ public class ExternalMonitoringReportService {
         builder.append("VM uptime").append(System.lineSeparator());
         builder.append("- Uptime: ").append(report.latestVmUptime() == null ? "unavailable" : report.latestVmUptime().displayValue()).append(System.lineSeparator());
         builder.append("- Uptime seconds: ").append(report.latestVmUptime() == null || report.latestVmUptime().uptimeSeconds() == null ? "unavailable" : report.latestVmUptime().uptimeSeconds()).append(System.lineSeparator());
+        builder.append("- Probe status: ").append(report.latestVmUptime() == null ? "unavailable" : valueOrUnavailable(report.latestVmUptime().probeStatus())).append(System.lineSeparator());
+        builder.append("- Probe failure kind: ").append(report.latestVmUptime() == null ? "unavailable" : valueOrUnavailable(report.latestVmUptime().probeFailureKind())).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
         builder.append("Heap summary").append(System.lineSeparator());
@@ -72,6 +74,8 @@ public class ExternalMonitoringReportService {
         builder.append("- Heap used: ").append(formatMb(report.latestHeapInfo().heapUsedMb().orElse(null))).append(System.lineSeparator());
         builder.append("- Heap total/committed: ").append(formatMb(report.latestHeapInfo().heapTotalMb().orElse(null))).append(System.lineSeparator());
         builder.append("- Metaspace used: ").append(formatMb(report.latestHeapInfo().metaspaceUsedMb().orElse(null))).append(System.lineSeparator());
+        builder.append("- Probe status: ").append(valueOrUnavailable(report.latestHeapInfo().probeStatus())).append(System.lineSeparator());
+        builder.append("- Probe failure kind: ").append(valueOrUnavailable(report.latestHeapInfo().probeFailureKind())).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
         builder.append("Trend summary").append(System.lineSeparator());
