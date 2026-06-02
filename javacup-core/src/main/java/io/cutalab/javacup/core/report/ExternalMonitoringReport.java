@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record ExternalMonitoringReport(
+        ExternalMonitoringReportMetadata metadata,
         Instant generatedAt,
         MonitoringSession session,
         ExternalHeapInfo latestHeapInfo,

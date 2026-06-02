@@ -27,6 +27,8 @@ It is not production-ready.
 
 ### Added
 
+- Shared project URL exposed through `AppInfo` for reports.
+- Report metadata with application name, version, project URL and generation timestamp.
 - Demo Metaspace mode for testing Metaspace trend diagnostics.
 - Lightweight Metaspace usage trend chart for external samples.
 - Metaspace trend summary for external samples.

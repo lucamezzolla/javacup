@@ -1,9 +1,11 @@
 package io.cutalab.javacup.dashboard;
 
+import io.cutalab.javacup.core.AppInfo;
 import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.metrics.ExternalVmUptime;
 import io.cutalab.javacup.core.report.ExternalMonitoringReport;
+import io.cutalab.javacup.core.report.ExternalMonitoringReportMetadata;
 import io.cutalab.javacup.core.session.ExternalMetricSample;
 import io.cutalab.javacup.core.session.ExternalMetricSampleSummary;
 import io.cutalab.javacup.core.session.MonitoringSession;
@@ -23,7 +25,15 @@ public class ExternalMonitoringReportService {
             List<DiagnosticWarning> diagnostics,
             List<ExternalMetricSample> recentSamples
     ) {
+        Instant generatedAt = Instant.now();
+
         return new ExternalMonitoringReport(
+                new ExternalMonitoringReportMetadata(
+                        AppInfo.NAME,
+                        AppInfo.VERSION,
+                        AppInfo.PROJECT_URL,
+                        generatedAt
+                ),
                 Instant.now(),
                 session,
                 latestHeapInfo,
@@ -38,6 +48,9 @@ public class ExternalMonitoringReportService {
         StringBuilder builder = new StringBuilder();
 
         builder.append("Generated at: ").append(report.generatedAt()).append(System.lineSeparator());
+        builder.append("Application: ").append(report.metadata().applicationName()).append(System.lineSeparator());
+        builder.append("Version: ").append(report.metadata().applicationVersion()).append(System.lineSeparator());
+        builder.append("Project: ").append(report.metadata().projectUrl()).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
         builder.append("Session").append(System.lineSeparator());
