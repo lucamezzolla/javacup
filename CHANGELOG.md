@@ -8,11 +8,10 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
-## [0.2.0-alpha.2-SNAPSHOT]
+## [0.2.0-alpha.2] - 2026-06-02
 
-### Planned
+- `v0.2.0-alpha.2` focuses on sample-quality diagnostics, Guide alignment and archived report comparison explanations.
 
-- Internal quick-use guide in the dashboard.
 
 ## [0.2.0-alpha.1] - 2026-06-02
 

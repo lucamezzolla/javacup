@@ -21,7 +21,7 @@ Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.
 
 Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 
-Current development version: `0.2.0-alpha.2-SNAPSHOT`.
+Current release candidate: `0.2.0-alpha.2`.
 
 <!-- JAVACUP_STATUS_START -->
 ## Current project status
@@ -32,48 +32,46 @@ Latest published checkpoints:
 
 - `v0.1.0-alpha.4`: closes the first local MVP alpha line.
 - `v0.2.0-alpha.1`: first 0.2.x checkpoint, focused on structured JVM probe diagnostics.
+- `v0.2.0-alpha.2`: second 0.2.x checkpoint candidate, focused on sample-quality diagnostics, guide updates and report-comparison explanations.
 
-Current development version:
+Current release candidate:
 
-- `0.2.0-alpha.2-SNAPSHOT`
+- `0.2.0-alpha.2`
 
 Current 0.2.x focus:
 
 - Make Javacup more useful as a local JVM “memory doctor”.
 - Prefer structured diagnostics over raw `jcmd` output whenever possible.
 - Keep reports local, explainable and easy to compare.
-- Improve the in-app guide so users can understand diagnostics without leaving the dashboard.
+- Keep the in-app Guide aligned with real diagnostic codes.
 
-Completed in the current 0.2.x line:
+Completed for `v0.2.0-alpha.2`:
 
-- Structured `jcmd` probe status and failure classification.
-- `probeStatus` and `probeFailureKind` persisted in JSON reports.
-- Probe diagnostics for process not found, attach failure, unavailable `jcmd`, timeout and generic failures.
-- Uptime probe diagnostics.
-- Unsupported heap parser format diagnostic for successful probes with unsupported `GC.heap_info` output.
-- More robust `GC.heap_info` parsing, including generation-based outputs.
-- Parser regression coverage using real OpenJDK G1 output.
-- Archived report comparison improvements for structured probe status and unsupported parser formats.
-- Internal Guide page with quick navigation, suggested workflow, diagnostic quick reference, external links and About/version information.
+- Internal Guide page finalized with quick navigation, suggested workflow, diagnostic quick reference, external links and About/version information.
 - Light/dark theme toggle saved in browser local storage.
+- Drawer menu spacing refinement.
 - Sample-quality diagnostics:
   - `INSUFFICIENT_SAMPLES_FOR_TREND`
   - `PARTIAL_SAMPLE_DATA`
-- Heap and Metaspace trend diagnostics protected by minimum sample thresholds.
+- Guide documentation for sample-quality diagnostics.
+- External Metrics diagnostics description aligned with the current rule set.
+- Archived report comparison explains insufficient and partial sample diagnostics.
+- Synthetic report fixtures validated manually for sample-quality comparison notes.
+- README status updated for the `v0.2.0-alpha.2` release candidate.
 
-Current development checkpoint:
+Release note:
 
-- We are working toward the next alpha checkpoint after `v0.2.0-alpha.1`.
-- No new tag is required yet while `0.2.0-alpha.2-SNAPSHOT` is still evolving.
-- A reasonable next tag candidate will be `v0.2.0-alpha.2` after the current sample-diagnostics and UI explanation block is considered complete and green in CI.
+- If tests and CI are green, tag this checkpoint as `v0.2.0-alpha.2`.
+- After tagging, development should resume on `0.2.0-alpha.3-SNAPSHOT`.
 
-Suggested next roadmap items:
+Suggested next roadmap items after `v0.2.0-alpha.2`:
 
-- Continue improving sample-based diagnostics.
 - Improve report preview/export readability.
 - Add more actionable interpretations for archived report comparison.
+- Continue improving sample-based diagnostics.
 - Keep the internal Guide aligned with every new diagnostic code.
 <!-- JAVACUP_STATUS_END -->
+
 
 
 ## 0.1.x alpha line closure
