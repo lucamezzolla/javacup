@@ -418,6 +418,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(new Span("Older: " + olderReport.absolutePath()));
             content.add(new Span("Newer: " + newerReport.absolutePath()));
             content.add(createComparisonContextSection(olderReport, newerReport, older, newer));
+            content.add(createOverallComparisonVerdictSection(older, newer));
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
@@ -448,6 +449,32 @@ public class ArchivedReportsView extends VerticalLayout {
         } catch (RuntimeException exception) {
             Notification.show("Unable to compare reports: " + exception.getMessage());
         }
+    }
+
+
+    private VerticalLayout createOverallComparisonVerdictSection(JsonNode older, JsonNode newer) {
+        int olderErrors = countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "ERROR");
+        int newerErrors = countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "ERROR");
+        int olderWarnings = countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "WARNING");
+        int newerWarnings = countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "WARNING");
+
+        Long olderHeapUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"));
+        Long newerHeapUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"));
+
+        String verdict;
+        if (newerErrors > olderErrors) {
+            verdict = "Worse: error diagnostics increased.";
+        } else if (newerWarnings > olderWarnings) {
+            verdict = "Potentially worse: warning diagnostics increased.";
+        } else if (olderHeapUsed != null && newerHeapUsed != null && newerHeapUsed > olderHeapUsed) {
+            verdict = "Watch: heap usage increased, but diagnostic severity did not get worse.";
+        } else if (newerErrors < olderErrors || newerWarnings < olderWarnings) {
+            verdict = "Better: diagnostic severity decreased.";
+        } else {
+            verdict = "Stable: no obvious diagnostic worsening detected.";
+        }
+
+        return createTextSection("Overall verdict", verdict);
     }
 
     private VerticalLayout createComparisonContextSection(
