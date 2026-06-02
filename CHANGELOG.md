@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Comparison context section for archived report comparison.
 - Selection feedback for archived report comparison.
 - Diagnostics severity comparison for archived reports.
 - Human-readable memory values in archived report comparisons.

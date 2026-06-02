@@ -417,6 +417,7 @@ public class ArchivedReportsView extends VerticalLayout {
 
             content.add(new Span("Older: " + olderReport.absolutePath()));
             content.add(new Span("Newer: " + newerReport.absolutePath()));
+            content.add(createComparisonContextSection(olderReport, newerReport, older, newer));
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
@@ -447,6 +448,52 @@ public class ArchivedReportsView extends VerticalLayout {
         }
     }
 
+    private VerticalLayout createComparisonContextSection(
+            LocalArchivedReport olderReport,
+            LocalArchivedReport newerReport,
+            JsonNode older,
+            JsonNode newer
+    ) {
+        String context = "Memory unit: " + memoryUnitSelect.getValue()
+                + System.lineSeparator()
+                + "Older file: " + olderReport.fileName()
+                + System.lineSeparator()
+                + "Newer file: " + newerReport.fileName()
+                + System.lineSeparator()
+                + "Older generated at: " + firstTextValue(firstExistingNode(older, "metadata"), "generatedAt")
+                + System.lineSeparator()
+                + "Newer generated at: " + firstTextValue(firstExistingNode(newer, "metadata"), "generatedAt")
+                + System.lineSeparator()
+                + "Older application: " + firstTextValue(firstExistingNode(older, "session"), "applicationName")
+                + System.lineSeparator()
+                + "Newer application: " + firstTextValue(firstExistingNode(newer, "session"), "applicationName");
+
+        return createTextSection("Comparison context", context);
+    }
+
+    private VerticalLayout createTextSection(String title, String contentText) {
+        VerticalLayout section = new VerticalLayout();
+        section.setPadding(false);
+        section.setSpacing(false);
+        section.setWidthFull();
+
+        H3 heading = new H3(title);
+        heading.getStyle().set("font-size", "var(--lumo-font-size-m)").set("margin-bottom", "var(--lumo-space-xs)");
+
+        Pre value = new Pre(contentText);
+        value.getStyle()
+                .set("width", "100%")
+                .set("overflow", "auto")
+                .set("white-space", "pre-wrap")
+                .set("word-break", "break-word")
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("padding", "var(--lumo-space-m)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("font-size", "var(--lumo-font-size-s)");
+
+        section.add(heading, value);
+        return section;
+    }
     private VerticalLayout createInterpretationSection(JsonNode older, JsonNode newer) {
         StringBuilder interpretation = new StringBuilder();
         interpretation.append(interpretMemoryDelta("Heap used", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"))).append(System.lineSeparator());
