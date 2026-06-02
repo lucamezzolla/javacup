@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.UnorderedList;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import io.cutalab.javacup.core.AppInfo;
 
 @Route(value = "guide", layout = MainLayout.class)
 public class GuideView extends VerticalLayout {
@@ -32,7 +33,8 @@ public class GuideView extends VerticalLayout {
                 internalLinkItem("Common problems", "common-problems"),
                 internalLinkItem("Reports and comparison", "reports"),
                 internalLinkItem("Learn more", "learn-more"),
-                internalLinkItem("Privacy", "privacy")
+                internalLinkItem("Privacy", "privacy"),
+                internalLinkItem("About Javacup", "about")
         );
 
         H2 firstStepsTitle = sectionTitle("First steps", "first-steps");
@@ -106,6 +108,17 @@ public class GuideView extends VerticalLayout {
                 "Javacup is designed for local use. It observes local JVMs and writes local reports. Review report contents before sharing them outside your machine."
         );
 
+        H2 aboutTitle = sectionTitle("About Javacup", "about");
+        Paragraph about = new Paragraph(
+                AppInfo.NAME + " " + AppInfo.VERSION + " — " + AppInfo.TAGLINE
+        );
+        Paragraph aboutScope = new Paragraph(
+                "Javacup is developed as a local-first Java memory diagnostic assistant. It is intended for controlled local analysis, testing and support workflows."
+        );
+        Anchor projectLink = new Anchor(AppInfo.PROJECT_URL, "Project page");
+        projectLink.setTarget("_blank");
+        projectLink.getElement().setAttribute("rel", "noopener noreferrer");
+
         add(
                 title,
                 intro,
@@ -127,7 +140,11 @@ public class GuideView extends VerticalLayout {
                 learnMoreTitle,
                 learnMore,
                 privacyTitle,
-                privacy
+                privacy,
+                aboutTitle,
+                about,
+                aboutScope,
+                projectLink
         );
     }
 

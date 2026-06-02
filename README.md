@@ -535,3 +535,4 @@ Highlights:
 - Guide internal links use explicit route anchors to remain on the guide page.
 - Internal guide finalized with quick navigation, workflow, diagnostic reference and external learning links.\n- Guide quick navigation uses explicit route anchors to stay on the guide page.\n\n- Light/dark theme toggle in the application header.\n
 - Drawer menu spacing refined with top padding.
+- Guide page includes About Javacup version information.
