@@ -470,6 +470,11 @@ public class ArchivedReportsView extends VerticalLayout {
         String newerUptimeRaw = firstTextValue(firstExistingNode(newer, "latestVmUptime", "uptime"), "rawOutput");
 
         StringBuilder notes = new StringBuilder();
+        appendStructuredProbeStatusNote(notes, "Older heap info", firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"));
+        appendStructuredProbeStatusNote(notes, "Newer heap info", firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"));
+        appendStructuredProbeStatusNote(notes, "Older uptime", firstExistingNode(older, "latestVmUptime", "uptime"));
+        appendStructuredProbeStatusNote(notes, "Newer uptime", firstExistingNode(newer, "latestVmUptime", "uptime"));
+
         appendJcmdStatusNote(notes, "Older heap info", olderHeapRaw);
         appendJcmdStatusNote(notes, "Newer heap info", newerHeapRaw);
         appendJcmdStatusNote(notes, "Older uptime", olderUptimeRaw);
@@ -480,6 +485,32 @@ public class ArchivedReportsView extends VerticalLayout {
         }
 
         return createTextSection("jcmd status notes", notes.toString());
+    }
+
+
+    private void appendStructuredProbeStatusNote(StringBuilder notes, String label, JsonNode probeNode) {
+        String status = firstTextValue(probeNode, "probeStatus");
+        String failureKind = firstTextValue(probeNode, "probeFailureKind");
+
+        if (isUnavailable(status) && isUnavailable(failureKind)) {
+            return;
+        }
+
+        if ("OK".equals(status) || "NONE".equals(failureKind)) {
+            appendNote(notes, label + ": structured probe status OK.");
+            return;
+        }
+
+        if (!isUnavailable(failureKind)) {
+            appendNote(notes, label + ": structured probe failure kind " + failureKind + ".");
+            return;
+        }
+
+        appendNote(notes, label + ": structured probe status " + status + ".");
+    }
+
+    private boolean isUnavailable(String value) {
+        return value == null || value.isBlank() || "Unavailable".equals(value);
     }
 
     private void appendJcmdStatusNote(StringBuilder notes, String label, String rawOutput) {

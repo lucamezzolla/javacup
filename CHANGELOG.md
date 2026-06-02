@@ -44,6 +44,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Archived report comparison uses structured probe status when available.
 - VM uptime probe failure kind converted into diagnostics.
 - Probe failure kind converted into diagnostics.
 - Probe status UI based on structured failure kind.
