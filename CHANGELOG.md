@@ -8,7 +8,9 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
-## [0.2.0-SNAPSHOT]
+## [0.2.0-alpha.1] - 2026-06-02
+
+First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 ### Planned
 

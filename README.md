@@ -19,7 +19,7 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.1.0-alpha.4`.
 
-Current development version: `0.2.0-SNAPSHOT`.
+Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 
 ## 0.1.x alpha line closure
 
@@ -516,3 +516,18 @@ The `0.1.x` alpha line is considered the first local MVP line. It is closed by `
 - Probe failure kind converted into diagnostics.
 - VM uptime probe failure kind converted into diagnostics.
 - Archived report comparison uses structured probe status when available.\n- Unit tests for structured probe failure classification.\n- Unit tests for probe failure diagnostics.\n- Broader `GC.heap_info` parsing for generation-based heap outputs.\n- Parser regression test based on real OpenJDK G1 `GC.heap_info` output.\n- Dedicated diagnostic for unsupported heap parser formats after successful probes.\n- Archived report comparison explains unsupported heap parser formats in human-readable language.
+
+## v0.2.0-alpha.1
+
+First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
+
+Highlights:
+
+- Structured `jcmd` probe status and failure classification.
+- `probeStatus` and `probeFailureKind` persisted in JSON reports.
+- Diagnostics for probe failures, including `PROBE_*` and `UPTIME_PROBE_*`.
+- Archived report comparison support for structured probe status.
+- Broader `GC.heap_info` parsing for generation-based heap outputs.
+- Parser regression coverage for real OpenJDK G1 heap info output.
+- Dedicated diagnostic for successful probes whose heap output format is not supported yet.
+
