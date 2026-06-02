@@ -366,6 +366,7 @@ public class ArchivedReportsView extends VerticalLayout {
 
             content.add(new Span("Older: " + olderReport.absolutePath()));
             content.add(new Span("Newer: " + newerReport.absolutePath()));
+            content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
             content.add(createComparisonSection("Command", textValue(older.path("session"), "displayName"), textValue(newer.path("session"), "displayName")));
@@ -392,6 +393,54 @@ public class ArchivedReportsView extends VerticalLayout {
         }
     }
 
+    private VerticalLayout createInterpretationSection(JsonNode older, JsonNode newer) {
+        StringBuilder interpretation = new StringBuilder();
+        interpretation.append(interpretNumericDelta("Heap used", firstAvailable(older, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"), firstAvailable(newer, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"))).append(System.lineSeparator());
+        interpretation.append(interpretNumericDelta("Heap committed", firstAvailable(older, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"), firstAvailable(newer, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"))).append(System.lineSeparator());
+        interpretation.append(interpretNumericDelta("Metaspace used", firstAvailable(older, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstAvailable(newer, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"))).append(System.lineSeparator());
+        interpretation.append(interpretNumericDelta("Warnings", String.valueOf(arraySize(older.path("warnings"))), String.valueOf(arraySize(newer.path("warnings"))))).append(System.lineSeparator());
+        interpretation.append(interpretNumericDelta("Samples", String.valueOf(arraySize(older.path("samples"))), String.valueOf(arraySize(newer.path("samples")))));
+
+        VerticalLayout section = new VerticalLayout();
+        section.setPadding(false);
+        section.setSpacing(false);
+        section.setWidthFull();
+
+        H3 heading = new H3("Interpretation");
+        heading.getStyle().set("font-size", "var(--lumo-font-size-m)").set("margin-bottom", "var(--lumo-space-xs)");
+
+        Pre value = new Pre(interpretation.toString());
+        value.getStyle()
+                .set("width", "100%")
+                .set("overflow", "auto")
+                .set("white-space", "pre-wrap")
+                .set("word-break", "break-word")
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("padding", "var(--lumo-space-m)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("font-size", "var(--lumo-font-size-s)");
+
+        section.add(heading, value);
+        return section;
+    }
+
+    private String interpretNumericDelta(String label, String olderValue, String newerValue) {
+        Long olderNumber = parseLongValue(olderValue);
+        Long newerNumber = parseLongValue(newerValue);
+
+        if (olderNumber == null || newerNumber == null) {
+            return label + ": unavailable for comparison";
+        }
+
+        long delta = newerNumber - olderNumber;
+        if (delta > 0) {
+            return label + " increased by " + delta + ".";
+        }
+        if (delta < 0) {
+            return label + " decreased by " + Math.abs(delta) + ".";
+        }
+        return label + " remained stable.";
+    }
     private VerticalLayout createNumericComparisonSection(String label, String olderValue, String newerValue) {
         Long olderNumber = parseLongValue(olderValue);
         Long newerNumber = parseLongValue(newerValue);

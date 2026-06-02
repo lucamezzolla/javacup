@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Deterministic interpretation for archived report comparisons.
 - Delta values in archived report comparison.
 - Basic two-report comparison from the archived reports dashboard.
 - Archived reports filters by file/path and local-time date range.
