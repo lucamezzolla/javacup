@@ -25,14 +25,14 @@ public class GuideView extends VerticalLayout {
 
         H2 navigationTitle = sectionTitle("Quick navigation", "quick-navigation");
         UnorderedList navigation = new UnorderedList(
-                linkItem("First steps", "#first-steps"),
-                linkItem("Suggested workflow", "#suggested-workflow"),
-                linkItem("How to read diagnostics", "#diagnostics"),
-                linkItem("Which diagnostic am I seeing?", "#diagnostic-codes"),
-                linkItem("Common problems", "#common-problems"),
-                linkItem("Reports and comparison", "#reports"),
-                linkItem("Learn more", "#learn-more"),
-                linkItem("Privacy", "#privacy")
+                linkItem("First steps", "guide#first-steps"),
+                linkItem("Suggested workflow", "guide#suggested-workflow"),
+                linkItem("How to read diagnostics", "guide#diagnostics"),
+                linkItem("Which diagnostic am I seeing?", "guide#diagnostic-codes"),
+                linkItem("Common problems", "guide#common-problems"),
+                linkItem("Reports and comparison", "guide#reports"),
+                linkItem("Learn more", "guide#learn-more"),
+                linkItem("Privacy", "guide#privacy")
         );
 
         H2 firstStepsTitle = sectionTitle("First steps", "first-steps");
