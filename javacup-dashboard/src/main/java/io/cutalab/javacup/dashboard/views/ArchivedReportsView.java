@@ -419,6 +419,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(new Span("Newer: " + newerReport.absolutePath()));
             content.add(createComparisonContextSection(olderReport, newerReport, older, newer));
             content.add(createOverallComparisonVerdictSection(older, newer));
+            content.add(createReportHealthScoreSection(older, newer));
             content.add(createMemoryRiskNotesSection(older, newer));
             content.add(createJcmdStatusNotesSection(older, newer));
             content.add(createInterpretationSection(older, newer));
@@ -530,6 +531,46 @@ public class ArchivedReportsView extends VerticalLayout {
             notes.append(System.lineSeparator());
         }
         notes.append("- ").append(note);
+    }
+
+
+    private VerticalLayout createReportHealthScoreSection(JsonNode older, JsonNode newer) {
+        int olderScore = calculateReportHealthScore(older);
+        int newerScore = calculateReportHealthScore(newer);
+        int delta = newerScore - olderScore;
+
+        String text = "Older score: " + olderScore + "/100"
+                + System.lineSeparator()
+                + "Newer score: " + newerScore + "/100"
+                + System.lineSeparator()
+                + "Delta: " + (delta >= 0 ? "+" : "") + delta;
+
+        return createTextSection("Report health score", text);
+    }
+
+    private int calculateReportHealthScore(JsonNode report) {
+        int score = 100;
+
+        JsonNode diagnostics = firstExistingNode(report, "diagnostics", "warnings");
+        score -= countDiagnosticsBySeverity(diagnostics, "ERROR") * 35;
+        score -= countDiagnosticsBySeverity(diagnostics, "WARNING") * 15;
+        score -= countDiagnosticsBySeverity(diagnostics, "INFO") * 3;
+
+        Long heapUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(report, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"));
+        Long heapTotal = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(report, "latestHeapInfo", "heapInfo", "heap"), "heapTotalKb", "totalKb", "totalBytes", "committedBytes", "heapCommittedBytes", "heapCommitted", "committed"));
+
+        if (heapUsed != null && heapTotal != null && heapTotal > 0) {
+            double ratio = (double) heapUsed / (double) heapTotal;
+            if (ratio >= 0.90) {
+                score -= 30;
+            } else if (ratio >= 0.80) {
+                score -= 20;
+            } else if (ratio >= 0.60) {
+                score -= 10;
+            }
+        }
+
+        return Math.max(0, Math.min(100, score));
     }
 
     private VerticalLayout createOverallComparisonVerdictSection(JsonNode older, JsonNode newer) {
