@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Memory risk notes for archived report comparison.
 - Diagnostic change summary for archived report comparison.
 - Overall verdict for archived report comparison.
 - Old and new diagnostics sections in archived report comparison.

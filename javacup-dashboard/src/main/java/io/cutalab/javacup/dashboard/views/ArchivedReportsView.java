@@ -419,6 +419,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(new Span("Newer: " + newerReport.absolutePath()));
             content.add(createComparisonContextSection(olderReport, newerReport, older, newer));
             content.add(createOverallComparisonVerdictSection(older, newer));
+            content.add(createMemoryRiskNotesSection(older, newer));
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
@@ -452,6 +453,47 @@ public class ArchivedReportsView extends VerticalLayout {
         }
     }
 
+
+
+    private VerticalLayout createMemoryRiskNotesSection(JsonNode older, JsonNode newer) {
+        StringBuilder notes = new StringBuilder();
+
+        Long olderHeapUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"));
+        Long newerHeapUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"));
+        Long newerHeapTotal = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapTotalKb", "totalKb", "totalBytes", "committedBytes", "heapCommittedBytes", "heapCommitted", "committed"));
+        Long olderMetaspaceUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"));
+        Long newerMetaspaceUsed = parseLongValue(firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"));
+
+        if (olderHeapUsed != null && newerHeapUsed != null && newerHeapUsed > olderHeapUsed) {
+            appendNote(notes, "Heap used increased by " + formatBytes(newerHeapUsed - olderHeapUsed, memoryUnitSelect.getValue()) + ".");
+        }
+
+        if (newerHeapUsed != null && newerHeapTotal != null && newerHeapTotal > 0) {
+            double ratio = (double) newerHeapUsed / (double) newerHeapTotal;
+            if (ratio >= 0.80) {
+                appendNote(notes, "Latest heap used is above 80% of latest heap total.");
+            } else if (ratio >= 0.60) {
+                appendNote(notes, "Latest heap used is above 60% of latest heap total.");
+            }
+        }
+
+        if (olderMetaspaceUsed != null && newerMetaspaceUsed != null && newerMetaspaceUsed > olderMetaspaceUsed) {
+            appendNote(notes, "Metaspace used increased by " + formatBytes(newerMetaspaceUsed - olderMetaspaceUsed, memoryUnitSelect.getValue()) + ".");
+        }
+
+        if (notes.isEmpty()) {
+            notes.append("No memory risk notes detected from the compared structured values.");
+        }
+
+        return createTextSection("Memory risk notes", notes.toString());
+    }
+
+    private void appendNote(StringBuilder notes, String note) {
+        if (!notes.isEmpty()) {
+            notes.append(System.lineSeparator());
+        }
+        notes.append("- ").append(note);
+    }
 
     private VerticalLayout createOverallComparisonVerdictSection(JsonNode older, JsonNode newer) {
         int olderErrors = countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "ERROR");

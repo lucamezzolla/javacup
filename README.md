@@ -96,6 +96,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - Old and new diagnostics sections in archived report comparison
 - Overall verdict for archived report comparison
 - Diagnostic change summary for archived report comparison
+- Memory risk notes for archived report comparison
 - Human-readable memory values in archived report comparisons
 - Downloadable archived report links with truncated path display
 - Archived reports grid with full path display and icon download action
