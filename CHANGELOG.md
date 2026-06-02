@@ -8,6 +8,13 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+## [0.1.0-alpha.4] - 2026-06-02
+
+### Changed
+
+- Closing checkpoint for the 0.1.x alpha line before moving to the next roadmap phase.
+- Keeps the advanced archived report comparison work from alpha.3 as the current stable baseline.
+
 ### Added
 
 - Report health score for archived report comparison.
