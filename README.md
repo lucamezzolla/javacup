@@ -536,3 +536,4 @@ Highlights:
 - Internal guide finalized with quick navigation, workflow, diagnostic reference and external learning links.\n- Guide quick navigation uses explicit route anchors to stay on the guide page.\n\n- Light/dark theme toggle in the application header.\n
 - Drawer menu spacing refined with top padding.
 - Guide page includes About Javacup version information.
+- Sample diagnostics now explain when there are not enough samples for reliable trend analysis.

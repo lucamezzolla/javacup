@@ -15,6 +15,45 @@ class ExternalSampleDiagnosticsTest {
     private final ExternalSampleDiagnostics diagnostics = new ExternalSampleDiagnostics();
 
     @Test
+    void reportsInsufficientSamplesForTrendDiagnostics() {
+        UUID sessionId = UUID.randomUUID();
+
+        List<ExternalMetricSample> samples = List.of(
+                sample(sessionId, 100, 10),
+                sample(sessionId, 110, 10),
+                sample(sessionId, 120, 10)
+        );
+
+        var warning = diagnostics.analyzeInsufficientSamples(samples);
+
+        assertTrue(warning.isPresent());
+        assertEquals("INSUFFICIENT_SAMPLES_FOR_TREND", warning.get().code());
+        assertEquals(DiagnosticSeverity.INFO, warning.get().severity());
+    }
+
+    @Test
+    void doesNotReportInsufficientSamplesWhenTrendSampleThresholdIsReached() {
+        UUID sessionId = UUID.randomUUID();
+
+        List<ExternalMetricSample> samples = List.of(
+                sample(sessionId, 100, 10),
+                sample(sessionId, 110, 10),
+                sample(sessionId, 120, 10),
+                sample(sessionId, 130, 10)
+        );
+
+        assertTrue(diagnostics.analyzeInsufficientSamples(samples).isEmpty());
+    }
+
+    @Test
+    void reportsInsufficientSamplesForNullSampleList() {
+        var warning = diagnostics.analyzeInsufficientSamples(null);
+
+        assertTrue(warning.isPresent());
+        assertEquals("INSUFFICIENT_SAMPLES_FOR_TREND", warning.get().code());
+    }
+
+    @Test
     void doesNotWarnWhenThereAreTooFewHeapSamples() {
         UUID sessionId = UUID.randomUUID();
 

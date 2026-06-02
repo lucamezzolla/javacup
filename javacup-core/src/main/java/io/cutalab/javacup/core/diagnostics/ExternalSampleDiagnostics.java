@@ -15,6 +15,25 @@ public class ExternalSampleDiagnostics {
     private static final long MIN_METASPACE_GROWTH_MB = 8;
     private static final double MIN_METASPACE_GROWTH_PERCENTAGE = 20.0;
 
+    public Optional<DiagnosticWarning> analyzeInsufficientSamples(List<ExternalMetricSample> samples) {
+        int sampleCount = samples == null ? 0 : samples.size();
+
+        if (sampleCount >= MIN_SAMPLES_FOR_TREND) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new DiagnosticWarning(
+                "INSUFFICIENT_SAMPLES_FOR_TREND",
+                DiagnosticSeverity.INFO,
+                "Not enough samples for reliable trend diagnostics",
+                "Javacup needs more samples before heap and Metaspace trend diagnostics can be considered reliable.",
+                String.format("Collected %d sample(s). Trend diagnostics require at least %d samples.",
+                        sampleCount,
+                        MIN_SAMPLES_FOR_TREND),
+                "Keep the monitoring session running a little longer, then collect more samples before interpreting growth diagnostics."
+        ));
+    }
+
     public Optional<DiagnosticWarning> analyzeHeapGrowth(List<ExternalMetricSample> samples) {
         TrendValues trend = trendValues(samples, MetricKind.HEAP);
 

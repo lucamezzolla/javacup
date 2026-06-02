@@ -53,6 +53,7 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 ### Added
 
+- Sample diagnostics now explain when there are not enough samples for reliable trend analysis.
 - Guide page includes About Javacup version information.
 - Internal guide finalized with quick navigation, workflow, diagnostic reference and external learning links.
 - Archived report comparison uses structured probe status when available.
