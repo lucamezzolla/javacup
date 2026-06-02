@@ -21,6 +21,8 @@ Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.
 
 Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 
+Current development version: `0.2.0-alpha.2-SNAPSHOT`.
+
 ## 0.1.x alpha line closure
 
 The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.4`.
