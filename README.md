@@ -531,4 +531,4 @@ Highlights:
 - Archived report comparison support for structured probe status.
 - Broader `GC.heap_info` parsing for generation-based heap outputs.
 - Parser regression coverage for real OpenJDK G1 heap info output.
-- Dedicated diagnostic for successful probes whose heap output format is not supported yet.\n- Internal quick-use guide with links for deeper JVM topics.\n\n- Light/dark theme toggle in the application header.\n
+- Dedicated diagnostic for successful probes whose heap output format is not supported yet.\n- Internal quick-use guide with links for deeper JVM topics.\n- Guide page explains common diagnostic codes in a quick-reference section.\n\n- Light/dark theme toggle in the application header.\n

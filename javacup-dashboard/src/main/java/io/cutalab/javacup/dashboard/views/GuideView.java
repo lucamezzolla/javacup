@@ -41,6 +41,18 @@ public class GuideView extends VerticalLayout {
                 new ListItem("Growth diagnostics become more useful after collecting multiple samples over time.")
         );
 
+        H2 diagnosticCodesTitle = new H2("Which diagnostic am I seeing?");
+        UnorderedList diagnosticCodes = new UnorderedList(
+                new ListItem("PROBE_PROCESS_NOT_FOUND: the selected JVM ended or cannot be found anymore."),
+                new ListItem("PROBE_ATTACH_FAILED: Javacup could not attach to the target JVM with the current user/environment."),
+                new ListItem("PROBE_JCMD_UNAVAILABLE: the local JDK diagnostic command tool is missing or cannot be launched."),
+                new ListItem("PROBE_TIMEOUT: the jcmd probe did not complete in time."),
+                new ListItem("UPTIME_PROBE_*: the same kind of probe issue happened while reading VM uptime."),
+                new ListItem("HEAP_PARSER_UNSUPPORTED_FORMAT: jcmd returned data, but Javacup does not support that heap output format yet."),
+                new ListItem("HEAP_NEAR_MAX: heap usage is high compared with the heap value reported by the JVM."),
+                new ListItem("HEAP_STRUCTURED_INFO_AVAILABLE: the heap probe returned parseable structured values.")
+        );
+
         H2 commonProblemsTitle = new H2("Common problems");
         UnorderedList commonProblems = new UnorderedList(
                 new ListItem("PROCESS_NOT_FOUND: the target process ended or is no longer visible. Refresh Processes and select a running JVM."),
@@ -75,6 +87,8 @@ public class GuideView extends VerticalLayout {
                 firstSteps,
                 diagnosticsTitle,
                 diagnostics,
+                diagnosticCodesTitle,
+                diagnosticCodes,
                 commonProblemsTitle,
                 commonProblems,
                 reportsTitle,
