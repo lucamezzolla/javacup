@@ -2,6 +2,7 @@ package io.cutalab.javacup.dashboard;
 
 import io.cutalab.javacup.core.AppInfo;
 import io.cutalab.javacup.core.diagnostics.DiagnosticWarning;
+import io.cutalab.javacup.core.diagnostics.DiagnosticSeverity;
 import io.cutalab.javacup.core.metrics.ExternalHeapInfo;
 import io.cutalab.javacup.core.metrics.ExternalVmUptime;
 import io.cutalab.javacup.core.report.ExternalMonitoringReport;
@@ -12,7 +13,9 @@ import io.cutalab.javacup.core.session.MonitoringSession;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ExternalMonitoringReportService {
@@ -26,6 +29,8 @@ public class ExternalMonitoringReportService {
             List<ExternalMetricSample> recentSamples
     ) {
         Instant generatedAt = Instant.now();
+        List<DiagnosticWarning> enrichedDiagnostics = new ArrayList<>(diagnostics);
+        evaluateUptimeProbeFailure(latestVmUptime).ifPresent(diagnostic -> addIfMissing(enrichedDiagnostics, diagnostic));
 
         return new ExternalMonitoringReport(
                 new ExternalMonitoringReportMetadata(
@@ -39,9 +44,82 @@ public class ExternalMonitoringReportService {
                 latestHeapInfo,
                 latestVmUptime,
                 sampleSummary,
-                List.copyOf(diagnostics),
+                List.copyOf(enrichedDiagnostics),
                 List.copyOf(recentSamples)
         );
+    }
+
+
+    private Optional<DiagnosticWarning> evaluateUptimeProbeFailure(ExternalVmUptime uptime) {
+        if (uptime == null) {
+            return Optional.empty();
+        }
+
+        String failureKind = uptime.probeFailureKind();
+
+        if (failureKind == null || failureKind.isBlank() || "NONE".equals(failureKind) || "UNKNOWN".equals(failureKind)) {
+            return Optional.empty();
+        }
+
+        return switch (failureKind) {
+            case "PROCESS_NOT_FOUND" -> Optional.of(new DiagnosticWarning(
+                    "UPTIME_PROBE_PROCESS_NOT_FOUND",
+                    DiagnosticSeverity.WARNING,
+                    "VM uptime probe target is no longer available",
+                    "The VM.uptime probe failed because the selected process could not be found.",
+                    "Uptime probe failure kind: PROCESS_NOT_FOUND.",
+                    "Go back to Processes and select a currently running Java process."
+            ));
+            case "ATTACH_FAILED" -> Optional.of(new DiagnosticWarning(
+                    "UPTIME_PROBE_ATTACH_FAILED",
+                    DiagnosticSeverity.WARNING,
+                    "VM uptime probe could not attach to the selected JVM",
+                    "The VM.uptime jcmd probe could not attach to the selected JVM with the current user or environment.",
+                    "Uptime probe failure kind: ATTACH_FAILED.",
+                    "Run Javacup with the same user as the target JVM and check operating-system attach permissions."
+            ));
+            case "JCMD_UNAVAILABLE" -> Optional.of(new DiagnosticWarning(
+                    "UPTIME_PROBE_JCMD_UNAVAILABLE",
+                    DiagnosticSeverity.WARNING,
+                    "jcmd is unavailable for VM uptime",
+                    "The VM.uptime probe could not run the jcmd executable.",
+                    "Uptime probe failure kind: JCMD_UNAVAILABLE.",
+                    "Make sure Javacup is running with a full JDK, not only a JRE, and that java.home/bin contains jcmd."
+            ));
+            case "TIMEOUT" -> Optional.of(new DiagnosticWarning(
+                    "UPTIME_PROBE_TIMEOUT",
+                    DiagnosticSeverity.WARNING,
+                    "VM uptime probe timed out",
+                    "The VM.uptime jcmd probe did not complete within the configured timeout.",
+                    "Uptime probe failure kind: TIMEOUT.",
+                    "Retry the probe. If the issue persists, the target JVM or the host may be overloaded."
+            ));
+            case "INTERRUPTED" -> Optional.of(new DiagnosticWarning(
+                    "UPTIME_PROBE_INTERRUPTED",
+                    DiagnosticSeverity.INFO,
+                    "VM uptime probe was interrupted",
+                    "The VM.uptime jcmd probe was interrupted before completion.",
+                    "Uptime probe failure kind: INTERRUPTED.",
+                    "Retry the probe if the target JVM is still running."
+            ));
+            default -> Optional.of(new DiagnosticWarning(
+                    "UPTIME_PROBE_FAILED",
+                    DiagnosticSeverity.INFO,
+                    "VM uptime probe failed",
+                    "The VM.uptime jcmd probe failed with a structured failure kind that does not have a dedicated diagnostic yet.",
+                    "Uptime probe failure kind: " + failureKind + ".",
+                    "Check the raw probe output for more details."
+            ));
+        };
+    }
+
+    private void addIfMissing(List<DiagnosticWarning> diagnostics, DiagnosticWarning diagnostic) {
+        boolean alreadyPresent = diagnostics.stream()
+                .anyMatch(existing -> existing.code().equals(diagnostic.code()));
+
+        if (!alreadyPresent) {
+            diagnostics.add(diagnostic);
+        }
     }
 
     public String createReadablePreview(ExternalMonitoringReport report) {
