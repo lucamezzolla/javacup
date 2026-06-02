@@ -431,6 +431,8 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createNumericComparisonSection("Diagnostics WARNING", String.valueOf(countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "WARNING")), String.valueOf(countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "WARNING"))));
             content.add(createNumericComparisonSection("Diagnostics ERROR", String.valueOf(countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "ERROR")), String.valueOf(countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "ERROR"))));
             content.add(createNumericComparisonSection("Samples", String.valueOf(arraySize(firstExistingNode(older, "recentSamples", "samples"))), String.valueOf(arraySize(firstExistingNode(newer, "recentSamples", "samples")))));
+            content.add(createJsonSection("Older diagnostics", firstExistingNode(older, "diagnostics", "warnings")));
+            content.add(createJsonSection("Newer diagnostics", firstExistingNode(newer, "diagnostics", "warnings")));
 
             Scroller scroller = new Scroller(content);
             scroller.setWidthFull();
