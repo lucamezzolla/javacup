@@ -404,6 +404,9 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createMemoryComparisonSection("Metaspace used", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes")));
             content.add(createNumericComparisonSection("Uptime", firstAvailable(firstExistingNode(older, "latestVmUptime", "uptime"), "uptimeSeconds", "seconds", "displayValue"), firstAvailable(firstExistingNode(newer, "latestVmUptime", "uptime"), "uptimeSeconds", "seconds", "displayValue")));
             content.add(createNumericComparisonSection("Diagnostics", String.valueOf(arraySize(firstExistingNode(older, "diagnostics", "warnings"))), String.valueOf(arraySize(firstExistingNode(newer, "diagnostics", "warnings")))));
+            content.add(createNumericComparisonSection("Diagnostics INFO", String.valueOf(countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "INFO")), String.valueOf(countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "INFO"))));
+            content.add(createNumericComparisonSection("Diagnostics WARNING", String.valueOf(countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "WARNING")), String.valueOf(countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "WARNING"))));
+            content.add(createNumericComparisonSection("Diagnostics ERROR", String.valueOf(countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "ERROR")), String.valueOf(countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "ERROR"))));
             content.add(createNumericComparisonSection("Samples", String.valueOf(arraySize(firstExistingNode(older, "recentSamples", "samples"))), String.valueOf(arraySize(firstExistingNode(newer, "recentSamples", "samples")))));
 
             Scroller scroller = new Scroller(content);
@@ -668,6 +671,21 @@ public class ArchivedReportsView extends VerticalLayout {
         return value.isTextual() ? value.asText() : value.toString();
     }
 
+    private int countDiagnosticsBySeverity(JsonNode diagnosticsNode, String severity) {
+        if (diagnosticsNode == null || !diagnosticsNode.isArray()) {
+            return 0;
+        }
+
+        int count = 0;
+        for (JsonNode diagnostic : diagnosticsNode) {
+            String diagnosticSeverity = firstTextValue(diagnostic, "severity");
+            if (severity.equalsIgnoreCase(diagnosticSeverity)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
     private int arraySize(JsonNode node) {
         return node != null && node.isArray() ? node.size() : 0;
     }
