@@ -632,6 +632,12 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             return;
         }
 
+        String structuredFailureKind = firstStructuredProbeFailureKind();
+        if (structuredFailureKind != null) {
+            updateProbeStatusFromFailureKind(structuredFailureKind);
+            return;
+        }
+
         String raw = collectRawProbeText();
 
         if (!processAlive) {
@@ -660,6 +666,57 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         probeAvailability.setText("Probe availability: raw output only");
         probeHint.setText("Probe hint: jcmd returned data, but Javacup could not parse it into structured values yet");
+    }
+
+
+    private String firstStructuredProbeFailureKind() {
+        String heapFailureKind = latestHeapInfo == null ? null : latestHeapInfo.probeFailureKind();
+        if (isUsefulFailureKind(heapFailureKind)) {
+            return heapFailureKind;
+        }
+
+        String uptimeFailureKind = latestVmUptime == null ? null : latestVmUptime.probeFailureKind();
+        if (isUsefulFailureKind(uptimeFailureKind)) {
+            return uptimeFailureKind;
+        }
+
+        return null;
+    }
+
+    private boolean isUsefulFailureKind(String failureKind) {
+        return failureKind != null
+                && !failureKind.isBlank()
+                && !"NONE".equals(failureKind)
+                && !"UNKNOWN".equals(failureKind);
+    }
+
+    private void updateProbeStatusFromFailureKind(String failureKind) {
+        switch (failureKind) {
+            case "PROCESS_NOT_FOUND" -> {
+                probeAvailability.setText("Probe availability: process not found");
+                probeHint.setText("Probe hint: the selected process ended or is no longer visible; go back to Processes and select a running JVM");
+            }
+            case "ATTACH_FAILED" -> {
+                probeAvailability.setText("Probe availability: permission issue");
+                probeHint.setText("Probe hint: jcmd could not attach to the selected JVM with the current user");
+            }
+            case "JCMD_UNAVAILABLE" -> {
+                probeAvailability.setText("Probe availability: jcmd unavailable");
+                probeHint.setText("Probe hint: make sure Javacup is running with a JDK and that jcmd exists in java.home/bin");
+            }
+            case "TIMEOUT" -> {
+                probeAvailability.setText("Probe availability: timeout");
+                probeHint.setText("Probe hint: jcmd did not complete within the configured timeout");
+            }
+            case "INTERRUPTED" -> {
+                probeAvailability.setText("Probe availability: interrupted");
+                probeHint.setText("Probe hint: the local probe was interrupted before completion");
+            }
+            default -> {
+                probeAvailability.setText("Probe availability: failed");
+                probeHint.setText("Probe hint: jcmd failed; raw output may contain more details");
+            }
+        }
     }
 
     private String collectRawProbeText() {

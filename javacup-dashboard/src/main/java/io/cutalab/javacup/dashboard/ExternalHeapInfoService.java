@@ -17,11 +17,7 @@ public class ExternalHeapInfoService {
 
     public ExternalHeapInfo readHeapInfo(long pid) {
         ProcessProbeResult result = probeService.probeHeapInfo(pid);
-
-        if (!result.successful()) {
-            return parser.parse(result.displayText());
-        }
-
-        return parser.parse(result.output());
+        ExternalHeapInfo heapInfo = parser.parse(result.successful() ? result.output() : result.displayText());
+        return heapInfo.withProbeMetadata(result.probeStatus().name(), result.failureKind().name());
     }
 }

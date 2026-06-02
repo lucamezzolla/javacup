@@ -511,3 +511,5 @@ Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 ## Current status
 
 The `0.1.x` alpha line is considered the first local MVP line. It is closed by `v0.1.0-alpha.3`, which includes the local dashboard, Java process discovery, external JVM monitoring through `jcmd`, JSON reports, local report archive, report search, preview/download, and advanced archived report comparison diagnostics.
+
+- Probe status UI based on structured failure kind.

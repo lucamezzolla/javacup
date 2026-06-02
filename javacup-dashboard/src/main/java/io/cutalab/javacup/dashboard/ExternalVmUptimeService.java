@@ -17,11 +17,7 @@ public class ExternalVmUptimeService {
 
     public ExternalVmUptime readUptime(long pid) {
         ProcessProbeResult result = probeService.probeVmUptime(pid);
-
-        if (!result.successful()) {
-            return parser.parse(result.displayText());
-        }
-
-        return parser.parse(result.output());
+        ExternalVmUptime uptime = parser.parse(result.successful() ? result.output() : result.displayText());
+        return uptime.withProbeMetadata(result.probeStatus().name(), result.failureKind().name());
     }
 }

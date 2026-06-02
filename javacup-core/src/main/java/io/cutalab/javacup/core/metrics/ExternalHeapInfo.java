@@ -13,8 +13,56 @@ public record ExternalHeapInfo(
         Long classSpaceUsedKb,
         Long classSpaceCommittedKb,
         Long classSpaceReservedKb,
+        String probeStatus,
+        String probeFailureKind,
         String rawOutput
 ) {
+    public ExternalHeapInfo(
+            String collectorOrHeapType,
+            Long heapUsedKb,
+            Long heapTotalKb,
+            Long heapReservedKb,
+            Long metaspaceUsedKb,
+            Long metaspaceCommittedKb,
+            Long metaspaceReservedKb,
+            Long classSpaceUsedKb,
+            Long classSpaceCommittedKb,
+            Long classSpaceReservedKb,
+            String rawOutput) {
+        this(
+                collectorOrHeapType,
+                heapUsedKb,
+                heapTotalKb,
+                heapReservedKb,
+                metaspaceUsedKb,
+                metaspaceCommittedKb,
+                metaspaceReservedKb,
+                classSpaceUsedKb,
+                classSpaceCommittedKb,
+                classSpaceReservedKb,
+                "UNKNOWN",
+                "UNKNOWN",
+                rawOutput);
+    }
+
+    public ExternalHeapInfo withProbeMetadata(String probeStatus, String probeFailureKind) {
+        return new ExternalHeapInfo(
+                collectorOrHeapType,
+                heapUsedKb,
+                heapTotalKb,
+                heapReservedKb,
+                metaspaceUsedKb,
+                metaspaceCommittedKb,
+                metaspaceReservedKb,
+                classSpaceUsedKb,
+                classSpaceCommittedKb,
+                classSpaceReservedKb,
+                probeStatus,
+                probeFailureKind,
+                rawOutput);
+    }
+
+
 
     public Optional<Long> heapUsedMb() {
         return toMb(heapUsedKb);

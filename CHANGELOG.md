@@ -44,6 +44,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Probe status UI based on structured failure kind.
 - Report health score for archived report comparison.
 - jcmd status notes for archived report comparison.
 - Sample summary comparison for archived reports.
