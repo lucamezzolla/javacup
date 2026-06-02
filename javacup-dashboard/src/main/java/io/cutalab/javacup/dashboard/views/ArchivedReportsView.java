@@ -369,12 +369,12 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
             content.add(createComparisonSection("Command", textValue(older.path("session"), "displayName"), textValue(newer.path("session"), "displayName")));
-            content.add(createComparisonSection("Heap used", firstAvailable(older, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"), firstAvailable(newer, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed")));
-            content.add(createComparisonSection("Heap committed", firstAvailable(older, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"), firstAvailable(newer, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted")));
-            content.add(createComparisonSection("Metaspace used", firstAvailable(older, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstAvailable(newer, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes")));
-            content.add(createComparisonSection("Uptime", firstAvailable(older, "uptime", "uptimeSeconds", "seconds", "displayValue"), firstAvailable(newer, "uptime", "uptimeSeconds", "seconds", "displayValue")));
-            content.add(createComparisonSection("Warnings", String.valueOf(arraySize(older.path("warnings"))), String.valueOf(arraySize(newer.path("warnings")))));
-            content.add(createComparisonSection("Samples", String.valueOf(arraySize(older.path("samples"))), String.valueOf(arraySize(newer.path("samples")))));
+            content.add(createNumericComparisonSection("Heap used", firstAvailable(older, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"), firstAvailable(newer, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed")));
+            content.add(createNumericComparisonSection("Heap committed", firstAvailable(older, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"), firstAvailable(newer, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted")));
+            content.add(createNumericComparisonSection("Metaspace used", firstAvailable(older, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstAvailable(newer, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes")));
+            content.add(createNumericComparisonSection("Uptime", firstAvailable(older, "uptime", "uptimeSeconds", "seconds", "displayValue"), firstAvailable(newer, "uptime", "uptimeSeconds", "seconds", "displayValue")));
+            content.add(createNumericComparisonSection("Warnings", String.valueOf(arraySize(older.path("warnings"))), String.valueOf(arraySize(newer.path("warnings")))));
+            content.add(createNumericComparisonSection("Samples", String.valueOf(arraySize(older.path("samples"))), String.valueOf(arraySize(newer.path("samples")))));
 
             Scroller scroller = new Scroller(content);
             scroller.setWidthFull();
@@ -392,7 +392,35 @@ public class ArchivedReportsView extends VerticalLayout {
         }
     }
 
+    private VerticalLayout createNumericComparisonSection(String label, String olderValue, String newerValue) {
+        Long olderNumber = parseLongValue(olderValue);
+        Long newerNumber = parseLongValue(newerValue);
+
+        if (olderNumber == null || newerNumber == null) {
+            return createComparisonSection(label, olderValue, newerValue);
+        }
+
+        long delta = newerNumber - olderNumber;
+        String deltaText = delta >= 0 ? "+" + delta : String.valueOf(delta);
+        return createComparisonSection(label, olderValue, newerValue, deltaText);
+    }
+
+    private Long parseLongValue(String value) {
+        if (value == null || value.isBlank() || "Unavailable".equals(value)) {
+            return null;
+        }
+
+        try {
+            return Long.parseLong(value.replaceAll("[^0-9-]", ""));
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
     private VerticalLayout createComparisonSection(String label, String olderValue, String newerValue) {
+        return createComparisonSection(label, olderValue, newerValue, "Unavailable");
+    }
+
+    private VerticalLayout createComparisonSection(String label, String olderValue, String newerValue, String deltaValue) {
         VerticalLayout section = new VerticalLayout();
         section.setPadding(false);
         section.setSpacing(false);
@@ -401,7 +429,7 @@ public class ArchivedReportsView extends VerticalLayout {
         H3 heading = new H3(label);
         heading.getStyle().set("font-size", "var(--lumo-font-size-m)").set("margin-bottom", "var(--lumo-space-xs)");
 
-        Pre values = new Pre("Older: " + olderValue + System.lineSeparator() + "Newer: " + newerValue);
+        Pre values = new Pre("Older: " + olderValue + System.lineSeparator() + "Newer: " + newerValue + System.lineSeparator() + "Delta: " + deltaValue);
         values.getStyle()
                 .set("width", "100%")
                 .set("overflow", "auto")

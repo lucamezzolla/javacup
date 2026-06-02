@@ -85,6 +85,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - Structured archived report details dialog
 - Archived reports filters by file/path and local-time date range
 - Basic two-report comparison from the archived reports dashboard
+- Delta values in archived report comparison
 - Downloadable archived report links with truncated path display
 - Archived reports grid with full path display and icon download action
 - Report metadata with application name, version, project URL and generation timestamp
