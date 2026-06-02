@@ -71,6 +71,8 @@ public class ArchivedReportsView extends VerticalLayout {
     private final DateTimePicker fromDateTimePicker = new DateTimePicker("From");
     private final DateTimePicker toDateTimePicker = new DateTimePicker("To");
     private final Button compareSelectedButton = new Button("Compare selected");
+    private final Button clearSelectionButton = new Button("Clear selection");
+    private final Paragraph compareSelectionSummary = new Paragraph("Select exactly two reports to compare.");
     private final Select<MemoryDisplayUnit> memoryUnitSelect = new Select<>();
 
     public ArchivedReportsView(LocalReportArchiveService archiveService) {
@@ -94,6 +96,7 @@ public class ArchivedReportsView extends VerticalLayout {
         Button applyFiltersButton = new Button("Apply filters", event -> refreshReports());
         Button clearFiltersButton = new Button("Clear filters", event -> clearFilters());
         compareSelectedButton.addClickListener(event -> compareSelectedReports());
+        clearSelectionButton.addClickListener(event -> clearReportSelection());
 
         configureFilters();
         configureMemoryUnitSelect();
@@ -106,14 +109,15 @@ public class ArchivedReportsView extends VerticalLayout {
                 applyFiltersButton,
                 clearFiltersButton,
                 refreshButton,
-                compareSelectedButton
+                compareSelectedButton,
+                clearSelectionButton
 ,
                 memoryUnitSelect        );
         filters.setWidthFull();
         filters.setAlignItems(Alignment.END);
         filters.getStyle().set("flex-wrap", "wrap");
 
-        add(title, description, filters, summary, reportsGrid);
+        add(title, description, filters, compareSelectionSummary, summary, reportsGrid);
 
         refreshReports();
     }
@@ -140,6 +144,7 @@ public class ArchivedReportsView extends VerticalLayout {
         reportsGrid.setWidthFull();
         reportsGrid.setAllRowsVisible(true);
         reportsGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        reportsGrid.addSelectionListener(event -> updateCompareSelectionSummary());
         reportsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
         reportsGrid.addComponentColumn(this::createPathText)
@@ -365,6 +370,23 @@ public class ArchivedReportsView extends VerticalLayout {
         }
 
         return localDateTime.atZone(LOCAL_ZONE).toInstant();
+    }
+    private void clearReportSelection() {
+        reportsGrid.deselectAll();
+        updateCompareSelectionSummary();
+    }
+
+    private void updateCompareSelectionSummary() {
+        int selectedCount = reportsGrid.getSelectedItems().size();
+        if (selectedCount == 0) {
+            compareSelectionSummary.setText("Select exactly two reports to compare.");
+        } else if (selectedCount == 1) {
+            compareSelectionSummary.setText("One report selected. Select one more report to compare.");
+        } else if (selectedCount == 2) {
+            compareSelectionSummary.setText("Two reports selected. Ready to compare.");
+        } else {
+            compareSelectionSummary.setText(selectedCount + " reports selected. Keep exactly two selected to compare.");
+        }
     }
     private void compareSelectedReports() {
         List<LocalArchivedReport> selectedReports = new ArrayList<>(reportsGrid.getSelectedItems());
@@ -695,6 +717,8 @@ public class ArchivedReportsView extends VerticalLayout {
             List<LocalArchivedReport> filteredReports = applyFilters(reports);
 
             reportsGrid.setItems(filteredReports);
+            reportsGrid.deselectAll();
+            updateCompareSelectionSummary();
             summary.setText("Archived reports: " + filteredReports.size() + " of " + reports.size());
         } catch (IllegalStateException exception) {
             reportsGrid.setItems(List.of());

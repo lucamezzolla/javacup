@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Selection feedback for archived report comparison.
 - Diagnostics severity comparison for archived reports.
 - Human-readable memory values in archived report comparisons.
 - Memory unit selector for archived report comparisons.

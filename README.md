@@ -91,6 +91,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - Archived report comparison reads current report JSON field names
 - Archived report comparison supports KB-based report memory fields
 - Diagnostics severity comparison for archived reports
+- Selection feedback for archived report comparison
 - Human-readable memory values in archived report comparisons
 - Downloadable archived report links with truncated path display
 - Archived reports grid with full path display and icon download action
