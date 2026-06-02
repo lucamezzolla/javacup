@@ -47,6 +47,7 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 ### Changed
 
+- Drawer menu spacing refined with top padding.
 - Closing checkpoint for the 0.1.x alpha line before moving to the next roadmap phase.
 - Keeps the advanced archived report comparison work from alpha.3 as the current stable baseline.
 

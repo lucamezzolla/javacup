@@ -534,3 +534,4 @@ Highlights:
 - Dedicated diagnostic for successful probes whose heap output format is not supported yet.\n- Internal quick-use guide with links for deeper JVM topics.\n- Guide page explains common diagnostic codes in a quick-reference section.\n- Guide page now includes quick navigation and a suggested diagnostic workflow.
 - Guide internal links use explicit route anchors to remain on the guide page.
 - Internal guide finalized with quick navigation, workflow, diagnostic reference and external learning links.\n- Guide quick navigation uses explicit route anchors to stay on the guide page.\n\n- Light/dark theme toggle in the application header.\n
+- Drawer menu spacing refined with top padding.

@@ -90,6 +90,8 @@ public class MainLayout extends AppLayout {
         navigation.addItem(new SideNavItem("Donate", DonationsView.class));
 
         Scroller scroller = new Scroller(navigation);
+        scroller.getStyle().set("padding-top", "15px");
+
         addToDrawer(scroller);
     }
 
