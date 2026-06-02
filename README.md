@@ -17,7 +17,7 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 ## Project status
 
-Javacup is **under active construction**. The latest alpha checkpoint is `v0.1.0-alpha.2`.
+Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.1.0-alpha.3`.
 
 Current development version: `0.2.0-SNAPSHOT`.
 
@@ -486,3 +486,8 @@ Javacup is licensed under the [Apache License 2.0](LICENSE).
 ## Author
 
 Created by [Luca Mezzolla](https://github.com/lucamezzolla).
+
+
+## Current status
+
+The `0.1.x` alpha line is considered the first local MVP line. It is closed by `v0.1.0-alpha.3`, which includes the local dashboard, Java process discovery, external JVM monitoring through `jcmd`, JSON reports, local report archive, report search, preview/download, and advanced archived report comparison diagnostics.

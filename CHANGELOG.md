@@ -8,6 +8,33 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+## [0.2.0-SNAPSHOT]
+
+### Planned
+
+- Start the next roadmap phase after the 0.1.x local MVP line.
+- Improve structured JVM diagnostics and make runtime evidence less dependent on raw `jcmd` output.
+
+
+
+## [0.1.x alpha line]
+
+### Closed by
+
+- `v0.1.0-alpha.3` closes the first local MVP alpha line.
+
+### Included
+
+- Local Vaadin dashboard.
+- Java process discovery.
+- External JVM monitoring through local `jcmd` probes.
+- Demo applications for normal, burst, leak and Metaspace scenarios.
+- JSON report generation and download.
+- Local archived report storage.
+- Archived report search by file name and date range.
+- Archived report preview and download.
+- Archived report comparison with diagnostics severity, interpretation, memory unit selection, sample summary comparison, `jcmd` status notes and report health score.
+
 ## [0.1.0-alpha.4] - 2026-06-02
 
 ### Changed
