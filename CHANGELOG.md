@@ -95,6 +95,7 @@ It is not production-ready.
 
 ### Changed
 
+- Archived reports grid now shows the full path in the File column and a dedicated download icon action.
 - Downloadable archived report links with truncated path display.
 - Dashboard theme CSS loaded through Vaadin AppShell configuration.
 - Dashboard theme CSS loaded through Vaadin AppShell configuration.

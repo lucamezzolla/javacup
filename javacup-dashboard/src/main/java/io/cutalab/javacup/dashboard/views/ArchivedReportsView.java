@@ -8,6 +8,8 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Pre;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -61,10 +63,10 @@ public class ArchivedReportsView extends VerticalLayout {
         reportsGrid.setWidthFull();
         reportsGrid.setAllRowsVisible(true);
 
-        reportsGrid.addColumn(LocalArchivedReport::fileName)
+        reportsGrid.addComponentColumn(this::createPathText)
                 .setHeader("File")
-                .setAutoWidth(true)
-                .setFlexGrow(1);
+                .setAutoWidth(false)
+                .setFlexGrow(3);
 
         reportsGrid.addColumn(report -> formatSize(report.sizeBytes()))
                 .setHeader("Size")
@@ -78,12 +80,24 @@ public class ArchivedReportsView extends VerticalLayout {
                 .setHeader("Preview")
                 .setAutoWidth(true);
 
-        reportsGrid.addComponentColumn(this::createPathDownloadLink)
-                .setHeader("Path")
-                .setAutoWidth(false)
-                .setFlexGrow(2);
+        reportsGrid.addComponentColumn(this::createDownloadLink)
+                .setHeader("Download")
+                .setAutoWidth(true)
+                .setFlexGrow(0);
     }
 
+    private com.vaadin.flow.component.html.Span createPathText(LocalArchivedReport report) {
+        com.vaadin.flow.component.html.Span path = new com.vaadin.flow.component.html.Span(report.absolutePath());
+        path.getElement().setAttribute("title", report.absolutePath());
+        path.getStyle()
+                .set("display", "block")
+                .set("max-width", "100%")
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis")
+                .set("white-space", "nowrap");
+
+        return path;
+    }
     private Button createPreviewButton(LocalArchivedReport report) {
         return new Button("Preview", event -> showReportPreview(report));
     }
@@ -124,30 +138,33 @@ public class ArchivedReportsView extends VerticalLayout {
             Notification.show("Unable to preview report: " + exception.getMessage());
         }
     }
-    private Anchor createPathDownloadLink(LocalArchivedReport report) {
-        Anchor link = new Anchor(
-                new StreamResource(report.fileName(), () -> {
-                    try {
-                        return Files.newInputStream(Path.of(report.absolutePath()));
-                    } catch (IOException exception) {
-                        throw new IllegalStateException("Unable to open archived report", exception);
-                    }
-                }),
-                report.absolutePath()
-        );
+    private Anchor createDownloadLink(LocalArchivedReport report) {
+        StreamResource resource = new StreamResource(report.fileName(), () -> {
+            try {
+                return Files.newInputStream(Path.of(report.absolutePath()));
+            } catch (IOException exception) {
+                throw new IllegalStateException("Unable to open archived report", exception);
+            }
+        });
+
+        Anchor link = new Anchor(resource, "");
+        Icon downloadIcon = new Icon(VaadinIcon.DOWNLOAD);
+        downloadIcon.setSize("18px");
+        link.add(downloadIcon);
 
         link.getElement().setAttribute("download", true);
-        link.getElement().setAttribute("title", report.absolutePath());
+        link.getElement().setAttribute("title", "Download " + report.fileName());
         link.getStyle()
-                .set("display", "block")
-                .set("max-width", "100%")
-                .set("overflow", "hidden")
-                .set("text-overflow", "ellipsis")
-                .set("white-space", "nowrap")
-                .set("cursor", "pointer");
+                .set("display", "inline-flex")
+                .set("align-items", "center")
+                .set("justify-content", "center")
+                .set("cursor", "pointer")
+                .set("text-decoration", "none")
+                .set("color", "var(--lumo-primary-text-color)");
 
         return link;
     }
+
     private void refreshReports() {
         try {
             List<LocalArchivedReport> reports = archiveService.listReports();

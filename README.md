@@ -81,6 +81,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - Archived reports view for local JSON report history
 - Archived report preview directly from the dashboard
 - Downloadable archived report links with truncated path display
+- Archived reports grid with full path display and icon download action
 - Report metadata with application name, version, project URL and generation timestamp
 - Shared project URL exposed through `AppInfo` for reports
 - Current JVM memory metrics for the Javacup process
