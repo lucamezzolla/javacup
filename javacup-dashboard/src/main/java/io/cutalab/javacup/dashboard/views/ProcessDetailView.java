@@ -41,9 +41,7 @@ public class ProcessDetailView extends VerticalLayout implements HasUrlParameter
         setSizeFull();
         setPadding(true);
         setSpacing(true);
-        getStyle().set("padding-bottom", "calc(var(--lumo-space-xl) * 2)");
-
-        Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
+Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button checkAccessButton = new Button("Check local access", event -> runProbe(ProbeType.VM_VERSION));
         Button heapInfoButton = new Button("Read heap info", event -> runProbe(ProbeType.HEAP_INFO));
         Button uptimeButton = new Button("Read VM uptime", event -> runProbe(ProbeType.VM_UPTIME));

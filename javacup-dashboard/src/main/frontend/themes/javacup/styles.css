@@ -1,5 +1,12 @@
 
-/* Javacup view bottom spacing */
-vaadin-app-layout vaadin-vertical-layout {
-    margin-bottom: 30px;
+
+
+
+
+
+
+/* Javacup body bottom spacing */
+body {
+    padding-bottom: 30px;
+    box-sizing: border-box;
 }

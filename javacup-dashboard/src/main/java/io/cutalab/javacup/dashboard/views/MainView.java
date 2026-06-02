@@ -16,9 +16,7 @@ public class MainView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
-        getStyle().set("padding-bottom", "calc(var(--lumo-space-xl) * 2)");
-
-        H1 title = new H1(AppInfo.NAME);
+H1 title = new H1(AppInfo.NAME);
         Paragraph tagline = new Paragraph(AppInfo.TAGLINE);
         Paragraph description = new Paragraph(
                 "Javacup is a local-first JVM diagnostic tool. The current milestone focuses on process discovery and lightweight JVM metrics."

@@ -57,9 +57,7 @@ public class CurrentJvmMetricsView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
-        getStyle().set("padding-bottom", "calc(var(--lumo-space-xl) * 2)");
-
-        H1 title = new H1("Current JVM metrics");
+H1 title = new H1("Current JVM metrics");
         Paragraph description = new Paragraph(
                 "This page reads lightweight JVM metrics from the Javacup process itself using standard MXBeans."
         );

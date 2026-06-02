@@ -33,9 +33,7 @@ public class ProcessesView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
-        getStyle().set("padding-bottom", "calc(var(--lumo-space-xl) * 2)");
-
-        H1 title = new H1("Java processes");
+H1 title = new H1("Java processes");
         Paragraph description = new Paragraph(
                 "This page lists local Java processes detected through the Java ProcessHandle API. Use the filter to search by PID, application name, process type, command or arguments."
         );

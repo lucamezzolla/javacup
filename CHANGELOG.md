@@ -90,7 +90,8 @@ It is not production-ready.
 
 ### Changed
 
-- Consistent bottom spacing across dashboard views through theme CSS.
+- Dashboard theme CSS loaded through Vaadin AppShell configuration.
+- Dashboard theme CSS loaded through Vaadin AppShell configuration.
 - Improved layout spacing across dashboard views.
 - Moved JSON report download action to the top of the external metrics view.
 - Improved process table layout to keep actions visible.
