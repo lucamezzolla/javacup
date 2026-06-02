@@ -1,11 +1,15 @@
 package io.cutalab.javacup.dashboard.views;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -70,12 +74,56 @@ public class ArchivedReportsView extends VerticalLayout {
                 .setHeader("Last modified")
                 .setAutoWidth(true);
 
+        reportsGrid.addComponentColumn(this::createPreviewButton)
+                .setHeader("Preview")
+                .setAutoWidth(true);
+
         reportsGrid.addComponentColumn(this::createPathDownloadLink)
                 .setHeader("Path")
                 .setAutoWidth(false)
                 .setFlexGrow(2);
     }
 
+    private Button createPreviewButton(LocalArchivedReport report) {
+        return new Button("Preview", event -> showReportPreview(report));
+    }
+
+    private void showReportPreview(LocalArchivedReport report) {
+        try {
+            String reportText = archiveService.readReportText(report);
+
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Archived report preview");
+            dialog.setWidth("min(900px, 95vw)");
+            dialog.setMaxHeight("90vh");
+
+            H2 fileName = new H2(report.fileName());
+            fileName.getStyle()
+                    .set("font-size", "var(--lumo-font-size-m)")
+                    .set("margin", "0");
+
+            Pre content = new Pre(reportText);
+            content.getStyle()
+                    .set("max-height", "65vh")
+                    .set("overflow", "auto")
+                    .set("white-space", "pre-wrap")
+                    .set("word-break", "break-word")
+                    .set("background", "var(--lumo-contrast-5pct)")
+                    .set("padding", "var(--lumo-space-m)")
+                    .set("border-radius", "var(--lumo-border-radius-m)")
+                    .set("font-size", "var(--lumo-font-size-s)");
+
+            Button closeButton = new Button("Close", event -> dialog.close());
+            HorizontalLayout footer = new HorizontalLayout(closeButton);
+            footer.setWidthFull();
+            footer.setJustifyContentMode(JustifyContentMode.END);
+
+            dialog.add(fileName, content, footer);
+            dialog.open();
+        } catch (RuntimeException exception) {
+            Notification.show("Unable to preview report: " + exception.getMessage());
+        }
+    }
     private Anchor createPathDownloadLink(LocalArchivedReport report) {
         Anchor link = new Anchor(
                 new StreamResource(report.fileName(), () -> {

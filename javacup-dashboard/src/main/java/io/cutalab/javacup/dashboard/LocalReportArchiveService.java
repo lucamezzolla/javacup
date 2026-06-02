@@ -64,6 +64,19 @@ public class LocalReportArchiveService {
         }
     }
 
+    public String readReportText(LocalArchivedReport report) {
+        try {
+            Path path = Path.of(report.absolutePath());
+
+            if (!path.normalize().startsWith(archiveDirectory.normalize())) {
+                throw new IllegalArgumentException("Report path is outside the archive directory");
+            }
+
+            return Files.readString(path);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to read archived report", exception);
+        }
+    }
     public Path archiveDirectory() {
         return archiveDirectory;
     }

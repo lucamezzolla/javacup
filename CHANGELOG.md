@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Archived report preview directly from the dashboard.
 - Archived reports view for local JSON report history.
 - Local archive for generated external monitoring JSON reports.
 - Shared project URL exposed through `AppInfo` for reports.
