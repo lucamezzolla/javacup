@@ -20,7 +20,6 @@ public class DonationsView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
-        getStyle().set("padding-bottom", "var(--lumo-space-xl)");
 
         H1 title = new H1("Support Javacup");
 

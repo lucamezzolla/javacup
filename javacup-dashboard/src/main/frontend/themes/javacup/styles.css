@@ -1,0 +1,5 @@
+
+/* Javacup view bottom spacing */
+vaadin-app-layout vaadin-vertical-layout {
+    margin-bottom: 30px;
+}

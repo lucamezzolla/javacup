@@ -169,7 +169,6 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         setSizeFull();
         setPadding(true);
         setSpacing(true);
-        getStyle().set("padding-bottom", "var(--lumo-space-xl)");
 
         Button backButton = new Button("Back to processes", event -> getUI().ifPresent(ui -> ui.navigate("processes")));
         Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics(true));

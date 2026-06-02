@@ -48,6 +48,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 
 - Local Vaadin dashboard running on `127.0.0.1:8787`
 - Donation page with PayPal support link
+- Consistent bottom spacing across dashboard views through theme CSS
 - Local Java process discovery through the Java `ProcessHandle` API
 - Process filtering by PID, application name, type, command or arguments
 - Self-process detection
