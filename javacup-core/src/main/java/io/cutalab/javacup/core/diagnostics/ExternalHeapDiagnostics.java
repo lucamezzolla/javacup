@@ -34,17 +34,32 @@ public class ExternalHeapDiagnostics {
         }
 
         if (warnings.isEmpty()) {
-            warnings.add(new DiagnosticWarning(
-                    "HEAP_INFO_NOT_STRUCTURED",
-                    DiagnosticSeverity.INFO,
-                    "Heap information is not fully structured yet",
-                    "The selected JVM returned heap information, but Javacup could not extract enough structured values from it yet.",
-                    "Raw heap information is still available in the page.",
-                    "Keep the raw output for debugging. Parser support will be improved as more JVM/GC formats are tested."
-            ));
+            warnings.add(createUnstructuredHeapDiagnostic(heapInfo));
         }
 
         return warnings;
+    }
+
+    private DiagnosticWarning createUnstructuredHeapDiagnostic(ExternalHeapInfo heapInfo) {
+        if (heapInfo != null && "OK".equals(heapInfo.probeStatus())) {
+            return new DiagnosticWarning(
+                    "HEAP_PARSER_UNSUPPORTED_FORMAT",
+                    DiagnosticSeverity.INFO,
+                    "Heap probe output format is not supported yet",
+                    "The external JVM probe completed successfully, but Javacup could not extract structured heap values from the returned format.",
+                    "Probe status: OK. Raw heap information is still available in the page and in archived reports.",
+                    "Keep the raw output for debugging. Parser support will be improved as more JVM/GC formats are tested."
+            );
+        }
+
+        return new DiagnosticWarning(
+                "HEAP_INFO_NOT_STRUCTURED",
+                DiagnosticSeverity.INFO,
+                "Heap information is not fully structured yet",
+                "The selected JVM returned heap information, but Javacup could not extract enough structured values from it yet.",
+                "Raw heap information is still available in the page.",
+                "Keep the raw output for debugging. Parser support will be improved as more JVM/GC formats are tested."
+        );
     }
 
     private Optional<DiagnosticWarning> evaluateProbeFailure(ExternalHeapInfo heapInfo) {
