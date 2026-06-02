@@ -174,4 +174,4 @@ It is not production-ready.
 - Fixed parameterized route usage in the sidebar.
 - Fixed external metrics lookup to probe by PID even when `ProcessHandle` metadata is unavailable.
 - Fixed external metrics auto-refresh lifecycle.
-- Removed accidental root file named `cd`.\n\n### Added\n\n- Broader `GC.heap_info` parsing for generation-based heap outputs.\n- Unit tests for probe failure diagnostics.\n- Unit tests for structured probe failure classification.\n
+- Removed accidental root file named `cd`.\n\n### Added\n\n- Parser regression test based on real OpenJDK G1 `GC.heap_info` output.\n- Broader `GC.heap_info` parsing for generation-based heap outputs.\n- Unit tests for probe failure diagnostics.\n- Unit tests for structured probe failure classification.\n
