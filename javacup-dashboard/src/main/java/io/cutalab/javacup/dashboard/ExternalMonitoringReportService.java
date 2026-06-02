@@ -67,7 +67,12 @@ public class ExternalMonitoringReportService {
         builder.append("- Latest heap used: ").append(formatMb(report.sampleSummary().latestHeapUsedMb())).append(System.lineSeparator());
         builder.append("- Min heap used: ").append(formatMb(report.sampleSummary().minHeapUsedMb())).append(System.lineSeparator());
         builder.append("- Max heap used: ").append(formatMb(report.sampleSummary().maxHeapUsedMb())).append(System.lineSeparator());
-        builder.append("- Heap growth: ").append(formatSignedMb(report.sampleSummary().growthMb())).append(System.lineSeparator());
+        builder.append("- Heap growth: ").append(formatSignedMb(report.sampleSummary().heapGrowthMb())).append(System.lineSeparator());
+        builder.append("- First Metaspace used: ").append(formatMb(report.sampleSummary().firstMetaspaceUsedMb())).append(System.lineSeparator());
+        builder.append("- Latest Metaspace used: ").append(formatMb(report.sampleSummary().latestMetaspaceUsedMb())).append(System.lineSeparator());
+        builder.append("- Min Metaspace used: ").append(formatMb(report.sampleSummary().minMetaspaceUsedMb())).append(System.lineSeparator());
+        builder.append("- Max Metaspace used: ").append(formatMb(report.sampleSummary().maxMetaspaceUsedMb())).append(System.lineSeparator());
+        builder.append("- Metaspace growth: ").append(formatSignedMb(report.sampleSummary().metaspaceGrowthMb())).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
         builder.append("Diagnostics").append(System.lineSeparator());

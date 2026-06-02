@@ -65,6 +65,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - In-memory external metric samples
 - External sample buffer limited to 100 samples per monitoring session
 - Session trend summary for external heap samples
+- Metaspace trend summary for external samples
 - Lightweight heap usage trend chart for external samples
 - Basic external diagnostics:
   - `HEAP_NEAR_MAX`

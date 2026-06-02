@@ -33,7 +33,28 @@ class ExternalMetricSampleSummaryServiceTest {
         assertEquals(95L, summary.latestHeapUsedMb());
         assertEquals(50L, summary.minHeapUsedMb());
         assertEquals(95L, summary.maxHeapUsedMb());
-        assertEquals(45L, summary.growthMb());
+        assertEquals(45L, summary.heapGrowthMb());
+    }
+
+
+    @Test
+    void summarizesMetaspaceValues() {
+        UUID sessionId = UUID.randomUUID();
+
+        List<ExternalMetricSample> samples = List.of(
+                sample(sessionId, 50, 20),
+                sample(sessionId, 70, 22),
+                sample(sessionId, 65, 21),
+                sample(sessionId, 95, 30)
+        );
+
+        ExternalMetricSampleSummary summary = service.summarize(samples);
+
+        assertEquals(20L, summary.firstMetaspaceUsedMb());
+        assertEquals(30L, summary.latestMetaspaceUsedMb());
+        assertEquals(20L, summary.minMetaspaceUsedMb());
+        assertEquals(30L, summary.maxMetaspaceUsedMb());
+        assertEquals(10L, summary.metaspaceGrowthMb());
     }
 
     @Test
@@ -59,13 +80,17 @@ class ExternalMetricSampleSummaryServiceTest {
     }
 
     private ExternalMetricSample sample(UUID sessionId, long heapUsedMb) {
+        return sample(sessionId, heapUsedMb, 10L);
+    }
+
+    private ExternalMetricSample sample(UUID sessionId, long heapUsedMb, long metaspaceUsedMb) {
         return new ExternalMetricSample(
                 sessionId,
                 1234L,
                 Instant.now(),
                 heapUsedMb,
                 256L,
-                10L,
+                metaspaceUsedMb,
                 1L
         );
     }

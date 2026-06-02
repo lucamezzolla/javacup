@@ -6,7 +6,12 @@ public record ExternalMetricSampleSummary(
         Long latestHeapUsedMb,
         Long minHeapUsedMb,
         Long maxHeapUsedMb,
-        Long growthMb
+        Long heapGrowthMb,
+        Long firstMetaspaceUsedMb,
+        Long latestMetaspaceUsedMb,
+        Long minMetaspaceUsedMb,
+        Long maxMetaspaceUsedMb,
+        Long metaspaceGrowthMb
 ) {
 
     public boolean hasHeapData() {
@@ -14,5 +19,16 @@ public record ExternalMetricSampleSummary(
                 && latestHeapUsedMb != null
                 && minHeapUsedMb != null
                 && maxHeapUsedMb != null;
+    }
+
+    public boolean hasMetaspaceData() {
+        return firstMetaspaceUsedMb != null
+                && latestMetaspaceUsedMb != null
+                && minMetaspaceUsedMb != null
+                && maxMetaspaceUsedMb != null;
+    }
+
+    public Long growthMb() {
+        return heapGrowthMb;
     }
 }

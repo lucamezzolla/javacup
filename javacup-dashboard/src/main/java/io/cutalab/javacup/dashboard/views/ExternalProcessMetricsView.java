@@ -116,6 +116,11 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span minHeapUsed = new Span("Min heap used: unavailable");
     private final Span maxHeapUsed = new Span("Max heap used: unavailable");
     private final Span heapGrowth = new Span("Heap growth: unavailable");
+    private final Span firstMetaspaceUsed = new Span("First Metaspace used: unavailable");
+    private final Span latestMetaspaceUsed = new Span("Latest Metaspace used: unavailable");
+    private final Span minMetaspaceUsedSummary = new Span("Min Metaspace used: unavailable");
+    private final Span maxMetaspaceUsedSummary = new Span("Max Metaspace used: unavailable");
+    private final Span metaspaceGrowth = new Span("Metaspace growth: unavailable");
     private final Div heapTrendChart = new Div();
     private final Grid<ExternalMetricSample> samplesGrid = new Grid<>(ExternalMetricSample.class, false);
 
@@ -206,7 +211,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
                 section("Diagnostics", new Paragraph("Rules: HEAP_NEAR_MAX and HEAP_SESSION_GROWING. More trend-based diagnostics will be added later."), diagnosticsGrid),
-                section("Session trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
+                section("Heap trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
+                section("Metaspace trend summary", firstMetaspaceUsed, latestMetaspaceUsed, minMetaspaceUsedSummary, maxMetaspaceUsedSummary, metaspaceGrowth),
                 section("Heap usage trend", new Paragraph("Lightweight chart based on the latest retained external samples."), heapTrendChart),
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
@@ -668,11 +674,18 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
     private void updateSampleSummary(ExternalMetricSampleSummary summary) {
         sampleCount.setText("Samples collected: " + summary.sampleCount());
+
         firstHeapUsed.setText("First heap used: " + formatNullableMb(summary.firstHeapUsedMb()));
         latestHeapUsed.setText("Latest heap used: " + formatNullableMb(summary.latestHeapUsedMb()));
         minHeapUsed.setText("Min heap used: " + formatNullableMb(summary.minHeapUsedMb()));
         maxHeapUsed.setText("Max heap used: " + formatNullableMb(summary.maxHeapUsedMb()));
-        heapGrowth.setText("Heap growth: " + formatSignedMb(summary.growthMb()));
+        heapGrowth.setText("Heap growth: " + formatSignedMb(summary.heapGrowthMb()));
+
+        firstMetaspaceUsed.setText("First Metaspace used: " + formatNullableMb(summary.firstMetaspaceUsedMb()));
+        latestMetaspaceUsed.setText("Latest Metaspace used: " + formatNullableMb(summary.latestMetaspaceUsedMb()));
+        minMetaspaceUsedSummary.setText("Min Metaspace used: " + formatNullableMb(summary.minMetaspaceUsedMb()));
+        maxMetaspaceUsedSummary.setText("Max Metaspace used: " + formatNullableMb(summary.maxMetaspaceUsedMb()));
+        metaspaceGrowth.setText("Metaspace growth: " + formatSignedMb(summary.metaspaceGrowthMb()));
     }
 
     private void updateStructuredHeapInfo(ExternalHeapInfo heapInfo) {
