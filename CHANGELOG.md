@@ -56,6 +56,7 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 ### Added
 
+- Archived report comparison explains insufficient and partial sample diagnostics.
 - Sample diagnostics now explain when collected samples have partial heap or Metaspace values.
 - Sample diagnostics now explain when there are not enough samples for reliable trend analysis.
 - Guide page includes About Javacup version information.

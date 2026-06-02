@@ -425,6 +425,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createMemoryRiskNotesSection(older, newer));
             content.add(createJcmdStatusNotesSection(older, newer));
             createUnsupportedParserFormatNoteSection(older, newer).ifPresent(content::add);
+            createSampleQualityNoteSection(older, newer).ifPresent(content::add);
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
@@ -466,6 +467,49 @@ public class ArchivedReportsView extends VerticalLayout {
 
 
 
+
+
+    private Optional<Component> createSampleQualityNoteSection(JsonNode older, JsonNode newer) {
+        boolean olderInsufficient = hasDiagnosticCode(older, "INSUFFICIENT_SAMPLES_FOR_TREND");
+        boolean newerInsufficient = hasDiagnosticCode(newer, "INSUFFICIENT_SAMPLES_FOR_TREND");
+        boolean olderPartial = hasDiagnosticCode(older, "PARTIAL_SAMPLE_DATA");
+        boolean newerPartial = hasDiagnosticCode(newer, "PARTIAL_SAMPLE_DATA");
+
+        if (!olderInsufficient && !newerInsufficient && !olderPartial && !newerPartial) {
+            return Optional.empty();
+        }
+
+        StringBuilder notes = new StringBuilder();
+        notes.append("Sample quality diagnostics were found in the compared reports. ");
+        notes.append("This means heap or Metaspace trend comparison may be less reliable than usual.");
+
+        if (olderInsufficient || newerInsufficient) {
+            notes.append(System.lineSeparator())
+                    .append("- INSUFFICIENT_SAMPLES_FOR_TREND: not enough samples were available for reliable trend diagnostics.");
+            appendAffectedReports(notes, olderInsufficient, newerInsufficient);
+        }
+
+        if (olderPartial || newerPartial) {
+            notes.append(System.lineSeparator())
+                    .append("- PARTIAL_SAMPLE_DATA: enough samples existed overall, but some heap or Metaspace values were missing.");
+            appendAffectedReports(notes, olderPartial, newerPartial);
+        }
+
+        notes.append(System.lineSeparator())
+                .append("Recommendation: collect a longer monitoring session and compare reports with at least four complete samples when possible.");
+
+        return Optional.of(createTextSection("Sample quality notes", notes.toString()));
+    }
+
+    private void appendAffectedReports(StringBuilder notes, boolean olderAffected, boolean newerAffected) {
+        if (olderAffected && newerAffected) {
+            notes.append(" Affected reports: older and newer.");
+        } else if (olderAffected) {
+            notes.append(" Affected report: older.");
+        } else if (newerAffected) {
+            notes.append(" Affected report: newer.");
+        }
+    }
 
     private Optional<Component> createUnsupportedParserFormatNoteSection(JsonNode older, JsonNode newer) {
         boolean olderUnsupported = hasDiagnosticCode(older, "HEAP_PARSER_UNSUPPORTED_FORMAT");
