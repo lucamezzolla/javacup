@@ -28,26 +28,34 @@ Current release candidate: `0.2.0-alpha.2`.
 
 Javacup is currently developed on the `development` branch.
 
-Latest published checkpoints:
+Latest stable checkpoints:
 
 - `v0.1.0-alpha.4`: closes the first local MVP alpha line.
 - `v0.2.0-alpha.1`: first 0.2.x checkpoint, focused on structured JVM probe diagnostics.
-- `v0.2.0-alpha.2`: second 0.2.x checkpoint candidate, focused on sample-quality diagnostics, guide updates and report-comparison explanations.
 
-Current release candidate:
+Current development / release-candidate area:
 
-- `0.2.0-alpha.2`
+- `0.2.0-alpha.2-SNAPSHOT` while still developing.
+- `v0.2.0-alpha.2` is the next likely checkpoint once the current sample-diagnostics and report-comparison block is finalized and green in CI.
 
-Current 0.2.x focus:
+Where the project is now:
 
-- Make Javacup more useful as a local JVM “memory doctor”.
-- Prefer structured diagnostics over raw `jcmd` output whenever possible.
-- Keep reports local, explainable and easy to compare.
-- Keep the in-app Guide aligned with real diagnostic codes.
+- The `0.1.x` local MVP line is complete.
+- The `0.2.x` line is focused on turning Javacup into a more useful local JVM “memory doctor”.
+- The current work prefers structured, explainable diagnostics over raw `jcmd` output whenever possible.
+- Reports remain local JSON snapshots that can be previewed, downloaded and compared.
 
-Completed for `v0.2.0-alpha.2`:
+Completed in the current 0.2.x line:
 
-- Internal Guide page finalized with quick navigation, suggested workflow, diagnostic quick reference, external links and About/version information.
+- Structured `jcmd` probe status and failure classification.
+- `probeStatus` and `probeFailureKind` persisted in JSON reports.
+- Probe diagnostics for process not found, attach failure, unavailable `jcmd`, timeout and generic failures.
+- Uptime probe diagnostics.
+- Unsupported heap parser format diagnostic for successful probes with unsupported `GC.heap_info` output.
+- More robust `GC.heap_info` parsing, including generation-based outputs.
+- Parser regression coverage using real OpenJDK G1 output.
+- Archived report comparison improvements for structured probe status and unsupported parser formats.
+- Internal Guide page with quick navigation, suggested workflow, diagnostic quick reference, external links and About/version information.
 - Light/dark theme toggle saved in browser local storage.
 - Drawer menu spacing refinement.
 - Sample-quality diagnostics:
@@ -57,12 +65,11 @@ Completed for `v0.2.0-alpha.2`:
 - External Metrics diagnostics description aligned with the current rule set.
 - Archived report comparison explains insufficient and partial sample diagnostics.
 - Synthetic report fixtures validated manually for sample-quality comparison notes.
-- README status updated for the `v0.2.0-alpha.2` release candidate.
 
-Release note:
+Recommended next checkpoint:
 
-- If tests and CI are green, tag this checkpoint as `v0.2.0-alpha.2`.
-- After tagging, development should resume on `0.2.0-alpha.3-SNAPSHOT`.
+- Tag `v0.2.0-alpha.2` after tests and GitHub Actions are green.
+- After tagging, resume development on `0.2.0-alpha.3-SNAPSHOT`.
 
 Suggested next roadmap items after `v0.2.0-alpha.2`:
 
@@ -71,6 +78,7 @@ Suggested next roadmap items after `v0.2.0-alpha.2`:
 - Continue improving sample-based diagnostics.
 - Keep the internal Guide aligned with every new diagnostic code.
 <!-- JAVACUP_STATUS_END -->
+
 
 
 
