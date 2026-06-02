@@ -14,6 +14,12 @@ public class ExternalHeapDiagnostics {
     public List<DiagnosticWarning> analyze(ExternalHeapInfo heapInfo) {
         List<DiagnosticWarning> warnings = new ArrayList<>();
 
+        evaluateProbeFailure(heapInfo).ifPresent(warnings::add);
+
+        if (!warnings.isEmpty()) {
+            return warnings;
+        }
+
         evaluateHeapNearMax(heapInfo).ifPresent(warnings::add);
 
         if (warnings.isEmpty() && heapInfo.hasStructuredValues()) {
@@ -42,6 +48,10 @@ public class ExternalHeapDiagnostics {
     }
 
     private Optional<DiagnosticWarning> evaluateProbeFailure(ExternalHeapInfo heapInfo) {
+        if (heapInfo == null) {
+            return Optional.empty();
+        }
+
         String failureKind = heapInfo.probeFailureKind();
 
         if (failureKind == null || failureKind.isBlank() || "NONE".equals(failureKind) || "UNKNOWN".equals(failureKind)) {

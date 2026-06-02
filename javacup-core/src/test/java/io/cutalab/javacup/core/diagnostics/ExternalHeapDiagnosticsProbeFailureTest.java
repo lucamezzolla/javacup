@@ -16,8 +16,8 @@ class ExternalHeapDiagnosticsProbeFailureTest {
         List<DiagnosticWarning> warnings = diagnostics.analyze(heapInfoWithFailure("PROCESS_NOT_FOUND"));
 
         assertEquals(1, warnings.size());
-        assertEquals("PROBE_PROCESS_NOT_FOUND", warnings.getFirst().code());
-        assertEquals(DiagnosticSeverity.WARNING, warnings.getFirst().severity());
+        assertEquals("PROBE_PROCESS_NOT_FOUND", warnings.get(0).code());
+        assertEquals(DiagnosticSeverity.WARNING, warnings.get(0).severity());
     }
 
     @Test
@@ -25,8 +25,8 @@ class ExternalHeapDiagnosticsProbeFailureTest {
         List<DiagnosticWarning> warnings = diagnostics.analyze(heapInfoWithFailure("ATTACH_FAILED"));
 
         assertEquals(1, warnings.size());
-        assertEquals("PROBE_ATTACH_FAILED", warnings.getFirst().code());
-        assertEquals(DiagnosticSeverity.WARNING, warnings.getFirst().severity());
+        assertEquals("PROBE_ATTACH_FAILED", warnings.get(0).code());
+        assertEquals(DiagnosticSeverity.WARNING, warnings.get(0).severity());
     }
 
     @Test
@@ -34,8 +34,8 @@ class ExternalHeapDiagnosticsProbeFailureTest {
         List<DiagnosticWarning> warnings = diagnostics.analyze(heapInfoWithFailure("JCMD_UNAVAILABLE"));
 
         assertEquals(1, warnings.size());
-        assertEquals("PROBE_JCMD_UNAVAILABLE", warnings.getFirst().code());
-        assertEquals(DiagnosticSeverity.WARNING, warnings.getFirst().severity());
+        assertEquals("PROBE_JCMD_UNAVAILABLE", warnings.get(0).code());
+        assertEquals(DiagnosticSeverity.WARNING, warnings.get(0).severity());
     }
 
     @Test
@@ -43,8 +43,8 @@ class ExternalHeapDiagnosticsProbeFailureTest {
         List<DiagnosticWarning> warnings = diagnostics.analyze(heapInfoWithFailure("TIMEOUT"));
 
         assertEquals(1, warnings.size());
-        assertEquals("PROBE_TIMEOUT", warnings.getFirst().code());
-        assertEquals(DiagnosticSeverity.WARNING, warnings.getFirst().severity());
+        assertEquals("PROBE_TIMEOUT", warnings.get(0).code());
+        assertEquals(DiagnosticSeverity.WARNING, warnings.get(0).severity());
     }
 
     @Test
@@ -52,8 +52,8 @@ class ExternalHeapDiagnosticsProbeFailureTest {
         List<DiagnosticWarning> warnings = diagnostics.analyze(heapInfoWithFailure("SOMETHING_NEW"));
 
         assertEquals(1, warnings.size());
-        assertEquals("PROBE_FAILED", warnings.getFirst().code());
-        assertEquals(DiagnosticSeverity.INFO, warnings.getFirst().severity());
+        assertEquals("PROBE_FAILED", warnings.get(0).code());
+        assertEquals(DiagnosticSeverity.INFO, warnings.get(0).severity());
     }
 
     private ExternalHeapInfo heapInfoWithFailure(String failureKind) {
