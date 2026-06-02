@@ -94,6 +94,7 @@ It is not production-ready.
 
 ### Changed
 
+- Downloadable archived report links with truncated path display.
 - Dashboard theme CSS loaded through Vaadin AppShell configuration.
 - Dashboard theme CSS loaded through Vaadin AppShell configuration.
 - Improved layout spacing across dashboard views.
