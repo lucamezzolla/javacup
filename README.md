@@ -17,7 +17,7 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 ## Project status
 
-Javacup is **under active construction**. The first alpha checkpoint is `v0.1.0-alpha.1`.
+Javacup is **under active construction**. The first alpha checkpoint is `v0.1.0-alpha.2`.
 
 This repository currently contains an early development preview. The application already runs locally and includes useful building blocks, but it is not production-ready yet.
 
@@ -382,7 +382,7 @@ Project changes are tracked in [`CHANGELOG.md`](CHANGELOG.md).
 Current alpha checkpoint:
 
 ```text
-v0.1.0-alpha.1
+v0.1.0-alpha.2
 ```
 
 This alpha marks the first local testing milestone. It is not production-ready.

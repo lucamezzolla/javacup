@@ -18,7 +18,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ---
 
-## [0.1.0-alpha.1] - 2026-06-02
+## [0.1.0-alpha.2] - 2026-06-02
 
 First alpha checkpoint for Javacup.
 
