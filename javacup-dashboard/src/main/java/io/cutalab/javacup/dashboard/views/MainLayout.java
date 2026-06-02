@@ -1,11 +1,10 @@
 package io.cutalab.javacup.dashboard.views;
 
-
-
-
-
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -13,14 +12,27 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import io.cutalab.javacup.core.AppInfo;
 
 public class MainLayout extends AppLayout {
 
+    private Button themeToggle;
+
     public MainLayout() {
         createHeader();
         createDrawer();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        attachEvent.getUI()
+                .getPage()
+                .executeJs("return localStorage.getItem('javacup.theme')")
+                .then(String.class, theme -> applyTheme("dark".equals(theme)));
     }
 
     private void createHeader() {
@@ -59,7 +71,11 @@ public class MainLayout extends AppLayout {
                 .set("gap", "0.15rem")
                 .set("line-height", "1.1");
 
-        addToNavbar(toggle, branding);
+        themeToggle = new Button("Dark", event -> toggleTheme());
+        themeToggle.getElement().setAttribute("aria-label", "Toggle light and dark theme");
+        themeToggle.addClassNames(LumoUtility.Margin.Left.AUTO);
+
+        addToNavbar(toggle, branding, themeToggle);
     }
 
     private void createDrawer() {
@@ -70,9 +86,44 @@ public class MainLayout extends AppLayout {
         navigation.addItem(new SideNavItem("Current JVM Metrics", CurrentJvmMetricsView.class));
         navigation.addItem(new SideNavItem("Metric Samples", MetricSamplesView.class));
         navigation.addItem(new SideNavItem("Archived reports", ArchivedReportsView.class));
+        navigation.addItem(new SideNavItem("Guide", GuideView.class));
         navigation.addItem(new SideNavItem("Donate", DonationsView.class));
 
         Scroller scroller = new Scroller(navigation);
         addToDrawer(scroller);
+    }
+
+    private void toggleTheme() {
+        UI ui = UI.getCurrent();
+
+        if (ui == null) {
+            return;
+        }
+
+        boolean currentlyDark = ui.getElement().getThemeList().contains(Lumo.DARK);
+        boolean nextDark = !currentlyDark;
+
+        applyTheme(nextDark);
+        ui.getPage().executeJs("localStorage.setItem('javacup.theme', $0)", nextDark ? "dark" : "light");
+    }
+
+    private void applyTheme(boolean dark) {
+        UI ui = UI.getCurrent();
+
+        if (ui == null) {
+            return;
+        }
+
+        if (dark) {
+            ui.getElement().getThemeList().add(Lumo.DARK);
+            if (themeToggle != null) {
+                themeToggle.setText("Light");
+            }
+        } else {
+            ui.getElement().getThemeList().remove(Lumo.DARK);
+            if (themeToggle != null) {
+                themeToggle.setText("Dark");
+            }
+        }
     }
 }
