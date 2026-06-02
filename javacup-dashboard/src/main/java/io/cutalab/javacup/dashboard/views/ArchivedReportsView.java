@@ -434,6 +434,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createNumericComparisonSection("Samples", String.valueOf(arraySize(firstExistingNode(older, "recentSamples", "samples"))), String.valueOf(arraySize(firstExistingNode(newer, "recentSamples", "samples")))));
             content.add(createJsonSection("Older diagnostics", firstExistingNode(older, "diagnostics", "warnings")));
             content.add(createJsonSection("Newer diagnostics", firstExistingNode(newer, "diagnostics", "warnings")));
+            content.add(createTextSection("Diagnostic changes", createDiagnosticChangesText(older, newer)));
 
             Scroller scroller = new Scroller(content);
             scroller.setWidthFull();
@@ -767,6 +768,47 @@ public class ArchivedReportsView extends VerticalLayout {
             return "Unavailable";
         }
         return value.isTextual() ? value.asText() : value.toString();
+    }
+
+
+    private String createDiagnosticChangesText(JsonNode older, JsonNode newer) {
+        int olderInfo = countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "INFO");
+        int newerInfo = countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "INFO");
+        int olderWarnings = countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "WARNING");
+        int newerWarnings = countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "WARNING");
+        int olderErrors = countDiagnosticsBySeverity(firstExistingNode(older, "diagnostics", "warnings"), "ERROR");
+        int newerErrors = countDiagnosticsBySeverity(firstExistingNode(newer, "diagnostics", "warnings"), "ERROR");
+
+        StringBuilder changes = new StringBuilder();
+        appendDiagnosticSeverityChange(changes, "INFO", olderInfo, newerInfo);
+        appendDiagnosticSeverityChange(changes, "WARNING", olderWarnings, newerWarnings);
+        appendDiagnosticSeverityChange(changes, "ERROR", olderErrors, newerErrors);
+
+        if (changes.isEmpty()) {
+            return "No diagnostic severity changes detected.";
+        }
+
+        return changes.toString();
+    }
+
+    private void appendDiagnosticSeverityChange(StringBuilder changes, String severity, int olderCount, int newerCount) {
+        int delta = newerCount - olderCount;
+        if (delta == 0) {
+            return;
+        }
+
+        if (!changes.isEmpty()) {
+            changes.append(System.lineSeparator());
+        }
+
+        changes.append(severity)
+                .append(delta > 0 ? " increased by " : " decreased by ")
+                .append(Math.abs(delta))
+                .append(" (")
+                .append(olderCount)
+                .append(" -> ")
+                .append(newerCount)
+                .append(").");
     }
 
     private int countDiagnosticsBySeverity(JsonNode diagnosticsNode, String severity) {
