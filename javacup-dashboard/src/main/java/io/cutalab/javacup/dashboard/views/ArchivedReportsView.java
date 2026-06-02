@@ -420,6 +420,7 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createComparisonContextSection(olderReport, newerReport, older, newer));
             content.add(createOverallComparisonVerdictSection(older, newer));
             content.add(createMemoryRiskNotesSection(older, newer));
+            content.add(createJcmdStatusNotesSection(older, newer));
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
@@ -459,6 +460,37 @@ public class ArchivedReportsView extends VerticalLayout {
     }
 
 
+
+
+    private VerticalLayout createJcmdStatusNotesSection(JsonNode older, JsonNode newer) {
+        String olderHeapRaw = firstTextValue(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "rawOutput");
+        String newerHeapRaw = firstTextValue(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "rawOutput");
+        String olderUptimeRaw = firstTextValue(firstExistingNode(older, "latestVmUptime", "uptime"), "rawOutput");
+        String newerUptimeRaw = firstTextValue(firstExistingNode(newer, "latestVmUptime", "uptime"), "rawOutput");
+
+        StringBuilder notes = new StringBuilder();
+        appendJcmdStatusNote(notes, "Older heap info", olderHeapRaw);
+        appendJcmdStatusNote(notes, "Newer heap info", newerHeapRaw);
+        appendJcmdStatusNote(notes, "Older uptime", olderUptimeRaw);
+        appendJcmdStatusNote(notes, "Newer uptime", newerUptimeRaw);
+
+        if (notes.isEmpty()) {
+            notes.append("No jcmd failure markers detected in compared raw outputs.");
+        }
+
+        return createTextSection("jcmd status notes", notes.toString());
+    }
+
+    private void appendJcmdStatusNote(StringBuilder notes, String label, String rawOutput) {
+        if (rawOutput == null || "Unavailable".equals(rawOutput)) {
+            appendNote(notes, label + ": raw output unavailable.");
+            return;
+        }
+
+        if (rawOutput.contains("Status: FAILED") || rawOutput.contains("No such process") || rawOutput.contains("Nessun processo corrisponde")) {
+            appendNote(notes, label + ": jcmd failed or the target process was no longer attachable.");
+        }
+    }
 
     private VerticalLayout createMemoryRiskNotesSection(JsonNode older, JsonNode newer) {
         StringBuilder notes = new StringBuilder();

@@ -10,6 +10,7 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- jcmd status notes for archived report comparison.
 - Sample summary comparison for archived reports.
 - Memory risk notes for archived report comparison.
 - Diagnostic change summary for archived report comparison.
