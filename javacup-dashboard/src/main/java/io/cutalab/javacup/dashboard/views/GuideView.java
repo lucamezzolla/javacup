@@ -25,14 +25,14 @@ public class GuideView extends VerticalLayout {
 
         H2 navigationTitle = sectionTitle("Quick navigation", "quick-navigation");
         UnorderedList navigation = new UnorderedList(
-                linkItem("First steps", "guide#first-steps"),
-                linkItem("Suggested workflow", "guide#suggested-workflow"),
-                linkItem("How to read diagnostics", "guide#diagnostics"),
-                linkItem("Which diagnostic am I seeing?", "guide#diagnostic-codes"),
-                linkItem("Common problems", "guide#common-problems"),
-                linkItem("Reports and comparison", "guide#reports"),
-                linkItem("Learn more", "guide#learn-more"),
-                linkItem("Privacy", "guide#privacy")
+                internalLinkItem("First steps", "first-steps"),
+                internalLinkItem("Suggested workflow", "suggested-workflow"),
+                internalLinkItem("How to read diagnostics", "diagnostics"),
+                internalLinkItem("Which diagnostic am I seeing?", "diagnostic-codes"),
+                internalLinkItem("Common problems", "common-problems"),
+                internalLinkItem("Reports and comparison", "reports"),
+                internalLinkItem("Learn more", "learn-more"),
+                internalLinkItem("Privacy", "privacy")
         );
 
         H2 firstStepsTitle = sectionTitle("First steps", "first-steps");
@@ -138,8 +138,8 @@ public class GuideView extends VerticalLayout {
         return title;
     }
 
-    private ListItem linkItem(String text, String url) {
-        return new ListItem(new Anchor(url, text));
+    private ListItem internalLinkItem(String text, String sectionId) {
+        return new ListItem(new Anchor("guide#" + sectionId, text));
     }
 
     private ListItem externalLinkItem(String text, String url) {

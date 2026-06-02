@@ -52,6 +52,7 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 ### Added
 
+- Internal guide finalized with quick navigation, workflow, diagnostic reference and external learning links.
 - Archived report comparison uses structured probe status when available.
 - VM uptime probe failure kind converted into diagnostics.
 - Probe failure kind converted into diagnostics.
@@ -172,6 +173,7 @@ It is not production-ready.
 
 ### Fixed
 
+- Guide internal links use explicit route anchors to remain on the guide page.
 - Archived report comparison now supports KB-based report memory fields.
 - Archived report comparison now reads current report JSON field names.
 - Fixed heap type parsing when `GC.heap_info` reports type and values on the same line.
