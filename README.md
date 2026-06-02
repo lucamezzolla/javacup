@@ -21,6 +21,26 @@ Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.
 
 Current development version: `0.2.0-SNAPSHOT`.
 
+## 0.1.x alpha line closure
+
+The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.3`.
+
+This line includes:
+
+- local Vaadin dashboard;
+- Java process discovery;
+- external JVM monitoring through local `jcmd` probes;
+- demo applications for normal, burst, leak and Metaspace scenarios;
+- sample collection;
+- JSON report generation and download;
+- local archived report storage;
+- archived report search by file name and date range;
+- archived report preview and download;
+- archived report comparison with diagnostics severity, interpretation, memory unit selection, sample summary comparison, `jcmd` status notes and report health score.
+
+Development now continues on `0.2.0-SNAPSHOT`, focused on stronger structured JVM diagnostics and less dependence on raw `jcmd` output.
+
+
 This repository currently contains an early development preview. The application already runs locally and includes useful building blocks, but it is not production-ready yet.
 
 Current focus:
