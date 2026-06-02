@@ -27,6 +27,8 @@ It is not production-ready.
 
 ### Added
 
+- Tests for Metaspace trend diagnostics.
+- Metaspace trend diagnostic `METASPACE_SESSION_GROWING`.
 - Tests for external sample buffer retention.
 - Tests for current external heap diagnostics.
 - Probe status explanation for external JVM metrics.

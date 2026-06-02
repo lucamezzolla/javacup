@@ -58,6 +58,7 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 - Basic external diagnostics:
   - `HEAP_NEAR_MAX`
   - `HEAP_SESSION_GROWING`
+  - `METASPACE_SESSION_GROWING`
 - External monitoring report model
 - Report preview dialog
 - JSON download for external monitoring reports
