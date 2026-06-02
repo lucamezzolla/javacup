@@ -23,6 +23,59 @@ Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 
 Current development version: `0.2.0-alpha.2-SNAPSHOT`.
 
+<!-- JAVACUP_STATUS_START -->
+## Current project status
+
+Javacup is currently developed on the `development` branch.
+
+Latest published checkpoints:
+
+- `v0.1.0-alpha.4`: closes the first local MVP alpha line.
+- `v0.2.0-alpha.1`: first 0.2.x checkpoint, focused on structured JVM probe diagnostics.
+
+Current development version:
+
+- `0.2.0-alpha.2-SNAPSHOT`
+
+Current 0.2.x focus:
+
+- Make Javacup more useful as a local JVM “memory doctor”.
+- Prefer structured diagnostics over raw `jcmd` output whenever possible.
+- Keep reports local, explainable and easy to compare.
+- Improve the in-app guide so users can understand diagnostics without leaving the dashboard.
+
+Completed in the current 0.2.x line:
+
+- Structured `jcmd` probe status and failure classification.
+- `probeStatus` and `probeFailureKind` persisted in JSON reports.
+- Probe diagnostics for process not found, attach failure, unavailable `jcmd`, timeout and generic failures.
+- Uptime probe diagnostics.
+- Unsupported heap parser format diagnostic for successful probes with unsupported `GC.heap_info` output.
+- More robust `GC.heap_info` parsing, including generation-based outputs.
+- Parser regression coverage using real OpenJDK G1 output.
+- Archived report comparison improvements for structured probe status and unsupported parser formats.
+- Internal Guide page with quick navigation, suggested workflow, diagnostic quick reference, external links and About/version information.
+- Light/dark theme toggle saved in browser local storage.
+- Sample-quality diagnostics:
+  - `INSUFFICIENT_SAMPLES_FOR_TREND`
+  - `PARTIAL_SAMPLE_DATA`
+- Heap and Metaspace trend diagnostics protected by minimum sample thresholds.
+
+Current development checkpoint:
+
+- We are working toward the next alpha checkpoint after `v0.2.0-alpha.1`.
+- No new tag is required yet while `0.2.0-alpha.2-SNAPSHOT` is still evolving.
+- A reasonable next tag candidate will be `v0.2.0-alpha.2` after the current sample-diagnostics and UI explanation block is considered complete and green in CI.
+
+Suggested next roadmap items:
+
+- Continue improving sample-based diagnostics.
+- Improve report preview/export readability.
+- Add more actionable interpretations for archived report comparison.
+- Keep the internal Guide aligned with every new diagnostic code.
+<!-- JAVACUP_STATUS_END -->
+
+
 ## 0.1.x alpha line closure
 
 The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.4`.
