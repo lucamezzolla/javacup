@@ -10,6 +10,8 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Human-readable memory values in archived report comparisons.
+- Memory unit selector for archived report comparisons.
 - Deterministic interpretation for archived report comparisons.
 - Delta values in archived report comparison.
 - Basic two-report comparison from the archived reports dashboard.
@@ -114,6 +116,8 @@ It is not production-ready.
 
 ### Fixed
 
+- Archived report comparison now supports KB-based report memory fields.
+- Archived report comparison now reads current report JSON field names.
 - Fixed heap type parsing when `GC.heap_info` reports type and values on the same line.
 - Fixed GitHub Actions failures caused by incomplete test dependencies.
 - Removed generated Vaadin frontend files from Git language statistics.

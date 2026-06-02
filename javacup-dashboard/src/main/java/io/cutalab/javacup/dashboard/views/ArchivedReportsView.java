@@ -19,6 +19,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -40,6 +41,25 @@ import java.util.Locale;
 @Route(value = "reports/archived", layout = MainLayout.class)
 public class ArchivedReportsView extends VerticalLayout {
 
+    private enum MemoryDisplayUnit {
+        AUTO("Auto"),
+        BYTES("Bytes"),
+        KB("KB"),
+        MB("MB"),
+        GB("GB");
+
+        private final String label;
+
+        MemoryDisplayUnit(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
     private static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
             .withZone(LOCAL_ZONE);
@@ -51,6 +71,7 @@ public class ArchivedReportsView extends VerticalLayout {
     private final DateTimePicker fromDateTimePicker = new DateTimePicker("From");
     private final DateTimePicker toDateTimePicker = new DateTimePicker("To");
     private final Button compareSelectedButton = new Button("Compare selected");
+    private final Select<MemoryDisplayUnit> memoryUnitSelect = new Select<>();
 
     public ArchivedReportsView(LocalReportArchiveService archiveService) {
         this.archiveService = archiveService;
@@ -75,6 +96,7 @@ public class ArchivedReportsView extends VerticalLayout {
         compareSelectedButton.addClickListener(event -> compareSelectedReports());
 
         configureFilters();
+        configureMemoryUnitSelect();
         configureGrid();
 
         HorizontalLayout filters = new HorizontalLayout(
@@ -85,7 +107,8 @@ public class ArchivedReportsView extends VerticalLayout {
                 clearFiltersButton,
                 refreshButton,
                 compareSelectedButton
-        );
+,
+                memoryUnitSelect        );
         filters.setWidthFull();
         filters.setAlignItems(Alignment.END);
         filters.getStyle().set("flex-wrap", "wrap");
@@ -106,6 +129,12 @@ public class ArchivedReportsView extends VerticalLayout {
 
         toDateTimePicker.setWidth("260px");
         toDateTimePicker.setStep(java.time.Duration.ofSeconds(1));
+    }
+    private void configureMemoryUnitSelect() {
+        memoryUnitSelect.setLabel("Memory unit");
+        memoryUnitSelect.setItems(MemoryDisplayUnit.values());
+        memoryUnitSelect.setValue(MemoryDisplayUnit.AUTO);
+        memoryUnitSelect.setWidth("160px");
     }
     private void configureGrid() {
         reportsGrid.setWidthFull();
@@ -177,11 +206,11 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(fileName);
             content.add(createJsonSection("Metadata", root.path("metadata")));
             content.add(createJsonSection("Session", root.path("session")));
-            content.add(createJsonSection("Heap / Metaspace", root.path("heapInfo")));
-            content.add(createJsonSection("Uptime", root.path("uptime")));
-            content.add(createJsonSection("Summary", root.path("summary")));
-            content.add(createJsonSection("Diagnostics", root.path("warnings")));
-            content.add(createJsonSection("Samples", root.path("samples")));
+            content.add(createJsonSection("Heap / Metaspace", firstExistingNode(root, "latestHeapInfo", "heapInfo", "heap")));
+            content.add(createJsonSection("Uptime", firstExistingNode(root, "latestVmUptime", "uptime")));
+            content.add(createJsonSection("Summary", firstExistingNode(root, "sampleSummary", "summary")));
+            content.add(createJsonSection("Diagnostics", firstExistingNode(root, "diagnostics", "warnings")));
+            content.add(createJsonSection("Samples", firstExistingNode(root, "recentSamples", "samples")));
 
             Scroller scroller = new Scroller(content);
             scroller.setWidthFull();
@@ -369,13 +398,13 @@ public class ArchivedReportsView extends VerticalLayout {
             content.add(createInterpretationSection(older, newer));
             content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
             content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
-            content.add(createComparisonSection("Command", textValue(older.path("session"), "displayName"), textValue(newer.path("session"), "displayName")));
-            content.add(createNumericComparisonSection("Heap used", firstAvailable(older, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"), firstAvailable(newer, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed")));
-            content.add(createNumericComparisonSection("Heap committed", firstAvailable(older, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"), firstAvailable(newer, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted")));
-            content.add(createNumericComparisonSection("Metaspace used", firstAvailable(older, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstAvailable(newer, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes")));
-            content.add(createNumericComparisonSection("Uptime", firstAvailable(older, "uptime", "uptimeSeconds", "seconds", "displayValue"), firstAvailable(newer, "uptime", "uptimeSeconds", "seconds", "displayValue")));
-            content.add(createNumericComparisonSection("Warnings", String.valueOf(arraySize(older.path("warnings"))), String.valueOf(arraySize(newer.path("warnings")))));
-            content.add(createNumericComparisonSection("Samples", String.valueOf(arraySize(older.path("samples"))), String.valueOf(arraySize(newer.path("samples")))));
+            content.add(createComparisonSection("Application", firstTextValue(firstExistingNode(older, "session"), "applicationName", "displayName", "command"), firstTextValue(firstExistingNode(newer, "session"), "applicationName", "displayName", "command")));
+            content.add(createMemoryComparisonSection("Heap used", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used")));
+            content.add(createMemoryComparisonSection("Heap total", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapTotalKb", "totalKb", "totalBytes", "committedBytes", "heapCommittedBytes", "heapCommitted", "committed"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapTotalKb", "totalKb", "totalBytes", "committedBytes", "heapCommittedBytes", "heapCommitted", "committed")));
+            content.add(createMemoryComparisonSection("Metaspace used", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes")));
+            content.add(createNumericComparisonSection("Uptime", firstAvailable(firstExistingNode(older, "latestVmUptime", "uptime"), "uptimeSeconds", "seconds", "displayValue"), firstAvailable(firstExistingNode(newer, "latestVmUptime", "uptime"), "uptimeSeconds", "seconds", "displayValue")));
+            content.add(createNumericComparisonSection("Diagnostics", String.valueOf(arraySize(firstExistingNode(older, "diagnostics", "warnings"))), String.valueOf(arraySize(firstExistingNode(newer, "diagnostics", "warnings")))));
+            content.add(createNumericComparisonSection("Samples", String.valueOf(arraySize(firstExistingNode(older, "recentSamples", "samples"))), String.valueOf(arraySize(firstExistingNode(newer, "recentSamples", "samples")))));
 
             Scroller scroller = new Scroller(content);
             scroller.setWidthFull();
@@ -395,11 +424,11 @@ public class ArchivedReportsView extends VerticalLayout {
 
     private VerticalLayout createInterpretationSection(JsonNode older, JsonNode newer) {
         StringBuilder interpretation = new StringBuilder();
-        interpretation.append(interpretNumericDelta("Heap used", firstAvailable(older, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"), firstAvailable(newer, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"))).append(System.lineSeparator());
-        interpretation.append(interpretNumericDelta("Heap committed", firstAvailable(older, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"), firstAvailable(newer, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"))).append(System.lineSeparator());
-        interpretation.append(interpretNumericDelta("Metaspace used", firstAvailable(older, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstAvailable(newer, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"))).append(System.lineSeparator());
-        interpretation.append(interpretNumericDelta("Warnings", String.valueOf(arraySize(older.path("warnings"))), String.valueOf(arraySize(newer.path("warnings"))))).append(System.lineSeparator());
-        interpretation.append(interpretNumericDelta("Samples", String.valueOf(arraySize(older.path("samples"))), String.valueOf(arraySize(newer.path("samples")))));
+        interpretation.append(interpretMemoryDelta("Heap used", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapUsedKb", "usedKb", "usedBytes", "heapUsedBytes", "heapUsed", "used"))).append(System.lineSeparator());
+        interpretation.append(interpretMemoryDelta("Heap total", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "heapTotalKb", "totalKb", "totalBytes", "committedBytes", "heapCommittedBytes", "heapCommitted", "committed"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "heapTotalKb", "totalKb", "totalBytes", "committedBytes", "heapCommittedBytes", "heapCommitted", "committed"))).append(System.lineSeparator());
+        interpretation.append(interpretMemoryDelta("Metaspace used", firstMemoryValueAsBytes(firstExistingNode(older, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstMemoryValueAsBytes(firstExistingNode(newer, "latestHeapInfo", "heapInfo", "heap"), "metaspaceUsedKb", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"))).append(System.lineSeparator());
+        interpretation.append(interpretNumericDelta("Diagnostics", String.valueOf(arraySize(firstExistingNode(older, "diagnostics", "warnings"))), String.valueOf(arraySize(firstExistingNode(newer, "diagnostics", "warnings"))))).append(System.lineSeparator());
+        interpretation.append(interpretNumericDelta("Samples", String.valueOf(arraySize(firstExistingNode(older, "recentSamples", "samples"))), String.valueOf(arraySize(firstExistingNode(newer, "recentSamples", "samples")))));
 
         VerticalLayout section = new VerticalLayout();
         section.setPadding(false);
@@ -440,6 +469,118 @@ public class ArchivedReportsView extends VerticalLayout {
             return label + " decreased by " + Math.abs(delta) + ".";
         }
         return label + " remained stable.";
+    }
+    private String firstMemoryValueAsBytes(JsonNode node, String... candidateFields) {
+        for (String candidateField : candidateFields) {
+            JsonNode value = node.path(candidateField);
+            if (value == null || value.isMissingNode() || value.isNull()) {
+                continue;
+            }
+
+            Long number = jsonNodeToLong(value);
+            if (number == null) {
+                continue;
+            }
+
+            if (candidateField.toLowerCase(java.util.Locale.ROOT).endsWith("kb")) {
+                return String.valueOf(number * 1024L);
+            }
+
+            return String.valueOf(number);
+        }
+
+        return "Unavailable";
+    }
+
+    private Long jsonNodeToLong(JsonNode value) {
+        if (value.isNumber()) {
+            return value.asLong();
+        }
+
+        if (value.isTextual()) {
+            try {
+                return Long.parseLong(value.asText().replaceAll("[^0-9-]", ""));
+            } catch (NumberFormatException exception) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    private String interpretMemoryDelta(String label, String olderValue, String newerValue) {
+        Long olderNumber = parseLongValue(olderValue);
+        Long newerNumber = parseLongValue(newerValue);
+
+        if (olderNumber == null || newerNumber == null) {
+            return label + ": unavailable for comparison";
+        }
+
+        long delta = newerNumber - olderNumber;
+        if (delta > 0) {
+            return label + " increased by " + formatBytes(delta, memoryUnitSelect.getValue()) + ".";
+        }
+        if (delta < 0) {
+            return label + " decreased by " + formatBytes(Math.abs(delta), memoryUnitSelect.getValue()) + ".";
+        }
+        return label + " remained stable.";
+    }
+    private VerticalLayout createMemoryComparisonSection(String label, String olderValue, String newerValue) {
+        Long olderNumber = parseLongValue(olderValue);
+        Long newerNumber = parseLongValue(newerValue);
+
+        if (olderNumber == null || newerNumber == null) {
+            return createNumericComparisonSection(label, olderValue, newerValue);
+        }
+
+        long delta = newerNumber - olderNumber;
+        return createComparisonSection(
+                label,
+                formatBytes(olderNumber, memoryUnitSelect.getValue()),
+                formatBytes(newerNumber, memoryUnitSelect.getValue()),
+                formatSignedBytes(delta, memoryUnitSelect.getValue())
+        );
+    }
+
+    private String formatSignedBytes(long bytes, MemoryDisplayUnit unit) {
+        String sign = bytes >= 0 ? "+" : "";
+        return sign + formatBytes(bytes, unit);
+    }
+
+    private String formatBytes(long bytes, MemoryDisplayUnit unit) {
+        MemoryDisplayUnit selectedUnit = unit == null ? MemoryDisplayUnit.AUTO : unit;
+        return switch (selectedUnit) {
+            case AUTO -> formatBytesUsingAutoUnit(bytes);
+            case BYTES -> bytes + " B";
+            case KB -> formatDecimal(bytes / 1024.0) + " KB (" + bytes + " bytes)";
+            case MB -> formatDecimal(bytes / (1024.0 * 1024.0)) + " MB (" + bytes + " bytes)";
+            case GB -> formatDecimal(bytes / (1024.0 * 1024.0 * 1024.0)) + " GB (" + bytes + " bytes)";
+        };
+    }
+
+    private String formatBytesUsingAutoUnit(long bytes) {
+        long absoluteBytes = Math.abs(bytes);
+
+        if (absoluteBytes < 1024L) {
+            return bytes + " B";
+        }
+
+        if (absoluteBytes < 1024L * 1024L) {
+            return formatDecimal(bytes / 1024.0) + " KB (" + bytes + " bytes)";
+        }
+
+        if (absoluteBytes < 1024L * 1024L * 1024L) {
+            return formatDecimal(bytes / (1024.0 * 1024.0)) + " MB (" + bytes + " bytes)";
+        }
+
+        return formatDecimal(bytes / (1024.0 * 1024.0 * 1024.0)) + " GB (" + bytes + " bytes)";
+    }
+
+    private String formatDecimal(double value) {
+        if (Math.abs(value - Math.rint(value)) < 0.01) {
+            return String.format(java.util.Locale.ROOT, "%.0f", value);
+        }
+        return String.format(java.util.Locale.ROOT, "%.2f", value);
     }
     private VerticalLayout createNumericComparisonSection(String label, String olderValue, String newerValue) {
         Long olderNumber = parseLongValue(olderValue);
@@ -493,15 +634,30 @@ public class ArchivedReportsView extends VerticalLayout {
         return section;
     }
 
-    private String firstAvailable(JsonNode root, String objectField, String... candidateFields) {
-        JsonNode objectNode = root.path(objectField);
+    private JsonNode firstExistingNode(JsonNode root, String... candidateFields) {
         for (String candidateField : candidateFields) {
-            String value = textValue(objectNode, candidateField);
+            JsonNode value = root.path(candidateField);
+            if (value != null && !value.isMissingNode() && !value.isNull()) {
+                return value;
+            }
+        }
+
+        return com.fasterxml.jackson.databind.node.MissingNode.getInstance();
+    }
+
+    private String firstAvailable(JsonNode node, String... candidateFields) {
+        for (String candidateField : candidateFields) {
+            String value = textValue(node, candidateField);
             if (!"Unavailable".equals(value)) {
                 return value;
             }
         }
+
         return "Unavailable";
+    }
+
+    private String firstTextValue(JsonNode node, String... candidateFields) {
+        return firstAvailable(node, candidateFields);
     }
 
     private String textValue(JsonNode node, String fieldName) {
