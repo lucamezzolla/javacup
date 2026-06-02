@@ -43,6 +43,33 @@ class LocalReportArchiveServiceTest {
         }
     }
 
+
+    @Test
+    void listsArchivedReportsNewestFirst() {
+        String originalUserHome = System.getProperty("user.home");
+
+        try {
+            Path tempHome = Files.createTempDirectory("javacup-report-list-test");
+            System.setProperty("user.home", tempHome.toString());
+
+            LocalReportArchiveService service = new LocalReportArchiveService(new ObjectMapper());
+
+            Path first = service.archive(report());
+            Thread.sleep(1100L);
+            Path second = service.archive(report());
+
+            List<LocalArchivedReport> reports = service.listReports();
+
+            assertTrue(reports.size() >= 2);
+            assertTrue(reports.get(0).lastModifiedAt().compareTo(reports.get(1).lastModifiedAt()) >= 0);
+            assertTrue(reports.stream().anyMatch(report -> report.absolutePath().equals(first.toAbsolutePath().toString())));
+            assertTrue(reports.stream().anyMatch(report -> report.absolutePath().equals(second.toAbsolutePath().toString())));
+        } catch (Exception exception) {
+            throw new AssertionError(exception);
+        } finally {
+            System.setProperty("user.home", originalUserHome);
+        }
+    }
     private ExternalMonitoringReport report() {
         MonitoringSession session = new MonitoringSession(
                 UUID.randomUUID(),

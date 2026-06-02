@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class LocalReportArchiveService {
@@ -44,7 +47,42 @@ public class LocalReportArchiveService {
         }
     }
 
+    public List<LocalArchivedReport> listReports() {
+        if (!Files.exists(archiveDirectory)) {
+            return List.of();
+        }
+
+        try (var paths = Files.list(archiveDirectory)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .map(this::toArchivedReport)
+                    .sorted(Comparator.comparing(LocalArchivedReport::lastModifiedAt).reversed())
+                    .toList();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to list archived reports", exception);
+        }
+    }
+
     public Path archiveDirectory() {
         return archiveDirectory;
+    }
+
+    private LocalArchivedReport toArchivedReport(Path path) {
+        try {
+            return new LocalArchivedReport(
+                    path.getFileName().toString(),
+                    path.toAbsolutePath().toString(),
+                    Files.size(path),
+                    Files.getLastModifiedTime(path).toInstant()
+            );
+        } catch (IOException exception) {
+            return new LocalArchivedReport(
+                    path.getFileName().toString(),
+                    path.toAbsolutePath().toString(),
+                    -1L,
+                    Instant.EPOCH
+            );
+        }
     }
 }
