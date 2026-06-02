@@ -5,12 +5,14 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Pre;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -31,6 +33,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Locale;
 
 @Route(value = "reports/archived", layout = MainLayout.class)
@@ -46,6 +50,7 @@ public class ArchivedReportsView extends VerticalLayout {
     private final TextField fileSearchField = new TextField("File or path contains");
     private final DateTimePicker fromDateTimePicker = new DateTimePicker("From");
     private final DateTimePicker toDateTimePicker = new DateTimePicker("To");
+    private final Button compareSelectedButton = new Button("Compare selected");
 
     public ArchivedReportsView(LocalReportArchiveService archiveService) {
         this.archiveService = archiveService;
@@ -67,6 +72,7 @@ public class ArchivedReportsView extends VerticalLayout {
         Button refreshButton = new Button("Refresh", event -> refreshReports());
         Button applyFiltersButton = new Button("Apply filters", event -> refreshReports());
         Button clearFiltersButton = new Button("Clear filters", event -> clearFilters());
+        compareSelectedButton.addClickListener(event -> compareSelectedReports());
 
         configureFilters();
         configureGrid();
@@ -77,7 +83,8 @@ public class ArchivedReportsView extends VerticalLayout {
                 toDateTimePicker,
                 applyFiltersButton,
                 clearFiltersButton,
-                refreshButton
+                refreshButton,
+                compareSelectedButton
         );
         filters.setWidthFull();
         filters.setAlignItems(Alignment.END);
@@ -103,6 +110,8 @@ public class ArchivedReportsView extends VerticalLayout {
     private void configureGrid() {
         reportsGrid.setWidthFull();
         reportsGrid.setAllRowsVisible(true);
+        reportsGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        reportsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
         reportsGrid.addComponentColumn(this::createPathText)
                 .setHeader("File")
@@ -327,6 +336,107 @@ public class ArchivedReportsView extends VerticalLayout {
         }
 
         return localDateTime.atZone(LOCAL_ZONE).toInstant();
+    }
+    private void compareSelectedReports() {
+        List<LocalArchivedReport> selectedReports = new ArrayList<>(reportsGrid.getSelectedItems());
+        selectedReports.sort(Comparator.comparing(LocalArchivedReport::lastModifiedAt));
+
+        if (selectedReports.size() != 2) {
+            Notification.show("Select exactly two archived reports to compare.");
+            return;
+        }
+
+        showReportComparison(selectedReports.get(0), selectedReports.get(1));
+    }
+
+    private void showReportComparison(LocalArchivedReport olderReport, LocalArchivedReport newerReport) {
+        try {
+            JsonNode older = archiveService.readReportJson(olderReport);
+            JsonNode newer = archiveService.readReportJson(newerReport);
+
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Archived report comparison");
+            dialog.setWidth("min(1000px, 95vw)");
+            dialog.setMaxHeight("90vh");
+
+            VerticalLayout content = new VerticalLayout();
+            content.setPadding(false);
+            content.setSpacing(true);
+            content.setWidthFull();
+
+            content.add(new Span("Older: " + olderReport.absolutePath()));
+            content.add(new Span("Newer: " + newerReport.absolutePath()));
+            content.add(createComparisonSection("Generated at", textValue(older, "generatedAt"), textValue(newer, "generatedAt")));
+            content.add(createComparisonSection("PID", textValue(older.path("session"), "pid"), textValue(newer.path("session"), "pid")));
+            content.add(createComparisonSection("Command", textValue(older.path("session"), "displayName"), textValue(newer.path("session"), "displayName")));
+            content.add(createComparisonSection("Heap used", firstAvailable(older, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed"), firstAvailable(newer, "heapInfo", "heapUsedBytes", "usedBytes", "heapUsed")));
+            content.add(createComparisonSection("Heap committed", firstAvailable(older, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted"), firstAvailable(newer, "heapInfo", "heapCommittedBytes", "committedBytes", "heapCommitted")));
+            content.add(createComparisonSection("Metaspace used", firstAvailable(older, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes"), firstAvailable(newer, "heapInfo", "metaspaceUsedBytes", "metaspaceUsed", "usedMetaspaceBytes")));
+            content.add(createComparisonSection("Uptime", firstAvailable(older, "uptime", "uptimeSeconds", "seconds", "displayValue"), firstAvailable(newer, "uptime", "uptimeSeconds", "seconds", "displayValue")));
+            content.add(createComparisonSection("Warnings", String.valueOf(arraySize(older.path("warnings"))), String.valueOf(arraySize(newer.path("warnings")))));
+            content.add(createComparisonSection("Samples", String.valueOf(arraySize(older.path("samples"))), String.valueOf(arraySize(newer.path("samples")))));
+
+            Scroller scroller = new Scroller(content);
+            scroller.setWidthFull();
+            scroller.setMaxHeight("70vh");
+
+            Button closeButton = new Button("Close", event -> dialog.close());
+            HorizontalLayout footer = new HorizontalLayout(closeButton);
+            footer.setWidthFull();
+            footer.setJustifyContentMode(JustifyContentMode.END);
+
+            dialog.add(scroller, footer);
+            dialog.open();
+        } catch (RuntimeException exception) {
+            Notification.show("Unable to compare reports: " + exception.getMessage());
+        }
+    }
+
+    private VerticalLayout createComparisonSection(String label, String olderValue, String newerValue) {
+        VerticalLayout section = new VerticalLayout();
+        section.setPadding(false);
+        section.setSpacing(false);
+        section.setWidthFull();
+
+        H3 heading = new H3(label);
+        heading.getStyle().set("font-size", "var(--lumo-font-size-m)").set("margin-bottom", "var(--lumo-space-xs)");
+
+        Pre values = new Pre("Older: " + olderValue + System.lineSeparator() + "Newer: " + newerValue);
+        values.getStyle()
+                .set("width", "100%")
+                .set("overflow", "auto")
+                .set("white-space", "pre-wrap")
+                .set("word-break", "break-word")
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("padding", "var(--lumo-space-m)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("font-size", "var(--lumo-font-size-s)");
+
+        section.add(heading, values);
+        return section;
+    }
+
+    private String firstAvailable(JsonNode root, String objectField, String... candidateFields) {
+        JsonNode objectNode = root.path(objectField);
+        for (String candidateField : candidateFields) {
+            String value = textValue(objectNode, candidateField);
+            if (!"Unavailable".equals(value)) {
+                return value;
+            }
+        }
+        return "Unavailable";
+    }
+
+    private String textValue(JsonNode node, String fieldName) {
+        JsonNode value = node.path(fieldName);
+        if (value == null || value.isMissingNode() || value.isNull()) {
+            return "Unavailable";
+        }
+        return value.isTextual() ? value.asText() : value.toString();
+    }
+
+    private int arraySize(JsonNode node) {
+        return node != null && node.isArray() ? node.size() : 0;
     }
     private void refreshReports() {
         try {
