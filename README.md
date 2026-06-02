@@ -540,3 +540,4 @@ Highlights:
 - Guide diagnostic reference includes insufficient sample trend diagnostics.
 - Sample diagnostics now explain when collected samples have partial heap or Metaspace values.
 - Guide diagnostic reference includes partial sample data diagnostics.
+- External metrics diagnostics description now reflects probe, sample quality and growth diagnostics.

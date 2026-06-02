@@ -216,7 +216,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
                 section("Structured compressed class space summary", classSpaceUsed, classSpaceCommitted, classSpaceReserved),
-                section("Diagnostics", new Paragraph("Rules: HEAP_NEAR_MAX and HEAP_SESSION_GROWING. More trend-based diagnostics will be added later."), diagnosticsGrid),
+                section("Diagnostics", new Paragraph("Rules include probe status, heap pressure, sample quality, heap growth and Metaspace growth diagnostics."), diagnosticsGrid),
                 section("Heap trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
                 section("Metaspace trend summary", firstMetaspaceUsed, latestMetaspaceUsed, minMetaspaceUsedSummary, maxMetaspaceUsedSummary, metaspaceGrowth),
                 section("Heap usage trend", new Paragraph("Lightweight chart based on the latest retained external samples."), heapTrendChart),
