@@ -67,7 +67,8 @@ public class GuideView extends VerticalLayout {
                 new ListItem("HEAP_PARSER_UNSUPPORTED_FORMAT means the probe succeeded, but Javacup does not support that GC.heap_info format yet."),
                 new ListItem("HEAP_NEAR_MAX means heap usage is close to the committed or available heap reported by the probe."),
                 new ListItem("Growth diagnostics become more useful after collecting multiple samples over time."),
-                new ListItem("INSUFFICIENT_SAMPLES_FOR_TREND means Javacup needs more samples before trend diagnostics are reliable.")
+                new ListItem("INSUFFICIENT_SAMPLES_FOR_TREND means Javacup needs more samples before trend diagnostics are reliable."),
+                new ListItem("PARTIAL_SAMPLE_DATA means enough samples exist, but some heap or Metaspace values are missing.")
         );
 
         H2 diagnosticCodesTitle = sectionTitle("Which diagnostic am I seeing?", "diagnostic-codes");
@@ -80,7 +81,8 @@ public class GuideView extends VerticalLayout {
                 new ListItem("HEAP_PARSER_UNSUPPORTED_FORMAT: jcmd returned data, but Javacup does not support that heap output format yet."),
                 new ListItem("HEAP_NEAR_MAX: heap usage is high compared with the heap value reported by the JVM."),
                 new ListItem("HEAP_STRUCTURED_INFO_AVAILABLE: the heap probe returned parseable structured values."),
-                new ListItem("INSUFFICIENT_SAMPLES_FOR_TREND: collect more samples before trusting trend diagnostics.")
+                new ListItem("INSUFFICIENT_SAMPLES_FOR_TREND: collect more samples before trusting trend diagnostics."),
+                new ListItem("PARTIAL_SAMPLE_DATA: enough samples were collected, but some heap or Metaspace values are unavailable.")
         );
 
         H2 commonProblemsTitle = sectionTitle("Common problems", "common-problems");
@@ -88,7 +90,8 @@ public class GuideView extends VerticalLayout {
                 new ListItem("PROCESS_NOT_FOUND: the target process ended or is no longer visible. Refresh Processes and select a running JVM."),
                 new ListItem("ATTACH_FAILED: run Javacup with the same operating-system user as the target JVM and check attach permissions."),
                 new ListItem("JCMD_UNAVAILABLE: run Javacup with a full JDK, not only a JRE, and make sure jcmd is available."),
-                new ListItem("Unsupported parser format: keep the raw output; it can be used to improve parser support.")
+                new ListItem("Unsupported parser format: keep the raw output; it can be used to improve parser support."),
+                new ListItem("PARTIAL_SAMPLE_DATA: check probe availability and raw output; missing values can weaken trend diagnostics.")
         );
 
         H2 reportsTitle = sectionTitle("Reports and comparison", "reports");
