@@ -174,4 +174,4 @@ It is not production-ready.
 - Fixed parameterized route usage in the sidebar.
 - Fixed external metrics lookup to probe by PID even when `ProcessHandle` metadata is unavailable.
 - Fixed external metrics auto-refresh lifecycle.
-- Removed accidental root file named `cd`.
+- Removed accidental root file named `cd`.\n\n### Added\n\n- Unit tests for structured probe failure classification.\n

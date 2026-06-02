@@ -515,4 +515,4 @@ The `0.1.x` alpha line is considered the first local MVP line. It is closed by `
 - Probe status UI based on structured failure kind.
 - Probe failure kind converted into diagnostics.
 - VM uptime probe failure kind converted into diagnostics.
-- Archived report comparison uses structured probe status when available.
+- Archived report comparison uses structured probe status when available.\n- Unit tests for structured probe failure classification.
