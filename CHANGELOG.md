@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Donation page with PayPal support link.
 - Tests for Metaspace trend diagnostics.
 - Metaspace trend diagnostic `METASPACE_SESSION_GROWING`.
 - Tests for external sample buffer retention.

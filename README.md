@@ -34,9 +34,20 @@ External JVM monitoring is being introduced progressively. Javacup can currently
 
 ---
 
+## Support Javacup
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
+
+If you find Javacup useful or want to support its development, you can make a small donation through PayPal.
+
+Your support helps improve documentation, testing, diagnostics, UI polish, examples and controlled production-readiness.
+
+---
+
 ## Current features
 
 - Local Vaadin dashboard running on `127.0.0.1:8787`
+- Donation page with PayPal support link
 - Local Java process discovery through the Java `ProcessHandle` API
 - Process filtering by PID, application name, type, command or arguments
 - Self-process detection
