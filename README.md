@@ -19,7 +19,7 @@ It does not try to replace advanced profilers such as VisualVM, JDK Mission Cont
 
 Javacup is **under active construction**. The latest alpha checkpoint is `v0.1.0-alpha.2`.
 
-Current development version: `0.1.0-alpha.3-SNAPSHOT`.
+Current development version: `0.1.0-alpha.3`.
 
 This repository currently contains an early development preview. The application already runs locally and includes useful building blocks, but it is not production-ready yet.
 
