@@ -34,6 +34,35 @@ public class ExternalSampleDiagnostics {
         ));
     }
 
+    public Optional<DiagnosticWarning> analyzePartialMetricData(List<ExternalMetricSample> samples) {
+        if (samples == null || samples.size() < MIN_SAMPLES_FOR_TREND) {
+            return Optional.empty();
+        }
+
+        long heapMetricSamples = countSamplesWithMetric(samples, MetricKind.HEAP);
+        long metaspaceMetricSamples = countSamplesWithMetric(samples, MetricKind.METASPACE);
+
+        boolean heapPartial = heapMetricSamples < MIN_SAMPLES_FOR_TREND;
+        boolean metaspacePartial = metaspaceMetricSamples < MIN_SAMPLES_FOR_TREND;
+
+        if (!heapPartial && !metaspacePartial) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new DiagnosticWarning(
+                "PARTIAL_SAMPLE_DATA",
+                DiagnosticSeverity.INFO,
+                "Some sample metrics are missing",
+                "Javacup collected enough samples overall, but not enough usable heap or Metaspace values for every trend diagnostic.",
+                String.format("Samples: %d. Heap values: %d. Metaspace values: %d. Required per trend: %d.",
+                        samples.size(),
+                        heapMetricSamples,
+                        metaspaceMetricSamples,
+                        MIN_SAMPLES_FOR_TREND),
+                "Check probe availability and keep collecting samples. If missing values persist, inspect the raw probe output and process availability."
+        ));
+    }
+
     public Optional<DiagnosticWarning> analyzeHeapGrowth(List<ExternalMetricSample> samples) {
         TrendValues trend = trendValues(samples, MetricKind.HEAP);
 
@@ -97,6 +126,10 @@ public class ExternalSampleDiagnostics {
             return TrendValues.notEnoughSamples();
         }
 
+        if (countSamplesWithMetric(samples, metricKind) < MIN_SAMPLES_FOR_TREND) {
+            return TrendValues.notEnoughSamples();
+        }
+
         ExternalMetricSample first = firstSampleWithMetric(samples, metricKind);
         ExternalMetricSample latest = latestSampleWithMetric(samples, metricKind);
 
@@ -115,6 +148,16 @@ public class ExternalSampleDiagnostics {
         double growthPercentage = growthMb * 100.0 / firstMb;
 
         return new TrendValues(true, firstMb, latestMb, growthMb, growthPercentage);
+    }
+
+    private long countSamplesWithMetric(List<ExternalMetricSample> samples, MetricKind metricKind) {
+        if (samples == null) {
+            return 0;
+        }
+
+        return samples.stream()
+                .filter(sample -> metricValue(sample, metricKind) != null)
+                .count();
     }
 
     private ExternalMetricSample firstSampleWithMetric(List<ExternalMetricSample> samples, MetricKind metricKind) {

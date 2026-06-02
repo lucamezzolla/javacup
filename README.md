@@ -538,3 +538,4 @@ Highlights:
 - Guide page includes About Javacup version information.
 - Sample diagnostics now explain when there are not enough samples for reliable trend analysis.
 - Guide diagnostic reference includes insufficient sample trend diagnostics.
+- Sample diagnostics now explain when collected samples have partial heap or Metaspace values.

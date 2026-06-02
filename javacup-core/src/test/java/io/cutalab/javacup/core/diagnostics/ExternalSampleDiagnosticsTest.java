@@ -15,6 +15,50 @@ class ExternalSampleDiagnosticsTest {
     private final ExternalSampleDiagnostics diagnostics = new ExternalSampleDiagnostics();
 
     @Test
+    void reportsPartialSampleDataWhenEnoughSamplesExistButMetricValuesAreMissing() {
+        UUID sessionId = UUID.randomUUID();
+
+        List<ExternalMetricSample> samples = List.of(
+                sample(sessionId, 100L, 10L),
+                sample(sessionId, null, 11L),
+                sample(sessionId, null, 12L),
+                sample(sessionId, 130L, null)
+        );
+
+        var warning = diagnostics.analyzePartialMetricData(samples);
+
+        assertTrue(warning.isPresent());
+        assertEquals("PARTIAL_SAMPLE_DATA", warning.get().code());
+        assertEquals(DiagnosticSeverity.INFO, warning.get().severity());
+    }
+
+    @Test
+    void doesNotReportPartialSampleDataWhenMetricsAreAvailable() {
+        UUID sessionId = UUID.randomUUID();
+
+        List<ExternalMetricSample> samples = List.of(
+                sample(sessionId, 100L, 10L),
+                sample(sessionId, 110L, 11L),
+                sample(sessionId, 120L, 12L),
+                sample(sessionId, 130L, 13L)
+        );
+
+        assertTrue(diagnostics.analyzePartialMetricData(samples).isEmpty());
+    }
+
+    @Test
+    void doesNotReportPartialSampleDataWhenSamplesAreAlreadyInsufficient() {
+        UUID sessionId = UUID.randomUUID();
+
+        List<ExternalMetricSample> samples = List.of(
+                sample(sessionId, 100L, null),
+                sample(sessionId, null, 11L)
+        );
+
+        assertTrue(diagnostics.analyzePartialMetricData(samples).isEmpty());
+    }
+
+    @Test
     void reportsInsufficientSamplesForTrendDiagnostics() {
         UUID sessionId = UUID.randomUUID();
 
@@ -131,6 +175,10 @@ class ExternalSampleDiagnosticsTest {
     }
 
     private ExternalMetricSample sample(UUID sessionId, long heapUsedMb, long metaspaceUsedMb) {
+        return sample(sessionId, Long.valueOf(heapUsedMb), Long.valueOf(metaspaceUsedMb));
+    }
+
+    private ExternalMetricSample sample(UUID sessionId, Long heapUsedMb, Long metaspaceUsedMb) {
         return new ExternalMetricSample(
                 sessionId,
                 1234L,

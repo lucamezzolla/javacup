@@ -17,6 +17,7 @@ public class ExternalSampleDiagnosticsService {
         List<DiagnosticWarning> warnings = new ArrayList<>();
 
         diagnostics.analyzeInsufficientSamples(samples).ifPresent(warnings::add);
+        diagnostics.analyzePartialMetricData(samples).ifPresent(warnings::add);
         diagnostics.analyzeHeapGrowth(samples).ifPresent(warnings::add);
         diagnostics.analyzeMetaspaceGrowth(samples).ifPresent(warnings::add);
 
