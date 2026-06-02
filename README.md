@@ -21,63 +21,8 @@ Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.
 
 Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 
-Current release candidate: `0.2.0-alpha.2`.
+Current released version: `0.2.0-alpha.2`.
 
-<!-- JAVACUP_STATUS_START -->
-## Current project status
-
-Javacup is currently developed on the `development` branch.
-
-Latest stable checkpoints:
-
-- `v0.1.0-alpha.4`: closes the first local MVP alpha line.
-- `v0.2.0-alpha.1`: first 0.2.x checkpoint, focused on structured JVM probe diagnostics.
-
-Current development / release-candidate area:
-
-- `0.2.0-alpha.2-SNAPSHOT` while still developing.
-- `v0.2.0-alpha.2` is the next likely checkpoint once the current sample-diagnostics and report-comparison block is finalized and green in CI.
-
-Where the project is now:
-
-- The `0.1.x` local MVP line is complete.
-- The `0.2.x` line is focused on turning Javacup into a more useful local JVM “memory doctor”.
-- The current work prefers structured, explainable diagnostics over raw `jcmd` output whenever possible.
-- Reports remain local JSON snapshots that can be previewed, downloaded and compared.
-
-Completed in the current 0.2.x line:
-
-- Structured `jcmd` probe status and failure classification.
-- `probeStatus` and `probeFailureKind` persisted in JSON reports.
-- Probe diagnostics for process not found, attach failure, unavailable `jcmd`, timeout and generic failures.
-- Uptime probe diagnostics.
-- Unsupported heap parser format diagnostic for successful probes with unsupported `GC.heap_info` output.
-- More robust `GC.heap_info` parsing, including generation-based outputs.
-- Parser regression coverage using real OpenJDK G1 output.
-- Archived report comparison improvements for structured probe status and unsupported parser formats.
-- Internal Guide page with quick navigation, suggested workflow, diagnostic quick reference, external links and About/version information.
-- Light/dark theme toggle saved in browser local storage.
-- Drawer menu spacing refinement.
-- Sample-quality diagnostics:
-  - `INSUFFICIENT_SAMPLES_FOR_TREND`
-  - `PARTIAL_SAMPLE_DATA`
-- Guide documentation for sample-quality diagnostics.
-- External Metrics diagnostics description aligned with the current rule set.
-- Archived report comparison explains insufficient and partial sample diagnostics.
-- Synthetic report fixtures validated manually for sample-quality comparison notes.
-
-Recommended next checkpoint:
-
-- Tag `v0.2.0-alpha.2` after tests and GitHub Actions are green.
-- After tagging, resume development on `0.2.0-alpha.3-SNAPSHOT`.
-
-Suggested next roadmap items after `v0.2.0-alpha.2`:
-
-- Improve report preview/export readability.
-- Add more actionable interpretations for archived report comparison.
-- Continue improving sample-based diagnostics.
-- Keep the internal Guide aligned with every new diagnostic code.
-<!-- JAVACUP_STATUS_END -->
 
 
 
@@ -569,16 +514,22 @@ Javacup is licensed under the [Apache License 2.0](LICENSE).
 Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 
 
+
 ## Current status
 
-The `0.1.x` alpha line is considered the first local MVP line. It is closed by `v0.1.0-alpha.4`, which includes the local dashboard, Java process discovery, external JVM monitoring through `jcmd`, JSON reports, local report archive, report search, preview/download, and advanced archived report comparison diagnostics.
+The `0.1.x` alpha line is considered the first local MVP line and is closed by `v0.1.0-alpha.4`.
 
-- Probe status UI based on structured failure kind.
-- Probe failure kind converted into diagnostics.
-- VM uptime probe failure kind converted into diagnostics.
-- Archived report comparison uses structured probe status when available.\n- Unit tests for structured probe failure classification.\n- Unit tests for probe failure diagnostics.\n- Broader `GC.heap_info` parsing for generation-based heap outputs.\n- Parser regression test based on real OpenJDK G1 `GC.heap_info` output.\n- Dedicated diagnostic for unsupported heap parser formats after successful probes.\n- Archived report comparison explains unsupported heap parser formats in human-readable language.
+The latest stable 0.2.x checkpoint is `v0.2.0-alpha.2`.
 
-## v0.2.0-alpha.1
+Current released version:
+
+- `0.2.0-alpha.2`
+
+Next development version:
+
+- `0.2.0-alpha.3-SNAPSHOT`
+
+### `v0.2.0-alpha.1`
 
 First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
@@ -590,14 +541,36 @@ Highlights:
 - Archived report comparison support for structured probe status.
 - Broader `GC.heap_info` parsing for generation-based heap outputs.
 - Parser regression coverage for real OpenJDK G1 heap info output.
-- Dedicated diagnostic for successful probes whose heap output format is not supported yet.\n- Internal quick-use guide with links for deeper JVM topics.\n- Guide page explains common diagnostic codes in a quick-reference section.\n- Guide page now includes quick navigation and a suggested diagnostic workflow.
-- Guide internal links use explicit route anchors to remain on the guide page.
-- Internal guide finalized with quick navigation, workflow, diagnostic reference and external learning links.\n- Guide quick navigation uses explicit route anchors to stay on the guide page.\n\n- Light/dark theme toggle in the application header.\n
+- Dedicated diagnostic for successful probes whose heap output format is not supported yet.
+
+### `v0.2.0-alpha.2`
+
+Second 0.2.x alpha checkpoint focused on sample-quality diagnostics, guide alignment and archived report comparison explanations.
+
+Highlights:
+
+- Internal Guide page with quick navigation, suggested workflow, diagnostic quick reference, external learning links and About/version information.
+- Guide internal navigation links stay on the Guide page.
+- Light/dark theme toggle saved in browser local storage.
 - Drawer menu spacing refined with top padding.
-- Guide page includes About Javacup version information.
-- Sample diagnostics now explain when there are not enough samples for reliable trend analysis.
-- Guide diagnostic reference includes insufficient sample trend diagnostics.
-- Sample diagnostics now explain when collected samples have partial heap or Metaspace values.
-- Guide diagnostic reference includes partial sample data diagnostics.
-- External metrics diagnostics description now reflects probe, sample quality and growth diagnostics.
+- `INSUFFICIENT_SAMPLES_FOR_TREND` sample-quality diagnostic.
+- `PARTIAL_SAMPLE_DATA` sample-quality diagnostic.
+- Guide diagnostic reference includes insufficient and partial sample data diagnostics.
+- External Metrics diagnostics description reflects probe, sample quality and growth diagnostics.
 - Archived report comparison explains insufficient and partial sample diagnostics.
+- Synthetic report fixtures validated manually for sample-quality comparison notes.
+
+### Release position
+
+`v0.2.0-alpha.2` has been tagged and pushed.
+
+Development can now resume on `0.2.0-alpha.3-SNAPSHOT`.
+
+### Suggested next roadmap items
+
+- Start `0.2.0-alpha.3-SNAPSHOT`.
+- Improve report preview/export readability.
+- Add more actionable interpretations for archived report comparison.
+- Continue improving sample-based diagnostics.
+- Keep the internal Guide aligned with every new diagnostic code.
+
