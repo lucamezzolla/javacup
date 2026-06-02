@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Demo Metaspace mode for testing Metaspace trend diagnostics.
 - Lightweight Metaspace usage trend chart for external samples.
 - Metaspace trend summary for external samples.
 - Donation page with PayPal support link.

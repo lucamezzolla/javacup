@@ -86,6 +86,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
   - normal mode
   - burst allocation mode
   - intentional leak mode
+  - metaspace mode
 - Automated tests for:
   - external heap parsing
   - external VM uptime parsing
@@ -210,6 +211,12 @@ Run a process with intentional retained memory growth:
 
 ```bash
 ./scripts/run-demo-leak.sh
+```
+
+Metaspace growth demo:
+
+```bash
+./scripts/run-demo-metaspace.sh
 ```
 
 The leak demo runs with `-Xmx256m` and intentionally retains memory chunks.
