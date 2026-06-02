@@ -1,6 +1,7 @@
 package io.cutalab.javacup.dashboard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.cutalab.javacup.core.report.ExternalMonitoringReport;
 import org.springframework.stereotype.Service;
@@ -75,6 +76,13 @@ public class LocalReportArchiveService {
             return Files.readString(path);
         } catch (IOException exception) {
             throw new IllegalStateException("Unable to read archived report", exception);
+        }
+    }
+    public JsonNode readReportJson(LocalArchivedReport report) {
+        try {
+            return objectMapper.readTree(readReportText(report));
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to parse archived report JSON", exception);
         }
     }
     public Path archiveDirectory() {

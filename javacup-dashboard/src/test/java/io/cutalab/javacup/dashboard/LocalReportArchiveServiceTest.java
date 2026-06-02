@@ -96,6 +96,30 @@ class LocalReportArchiveServiceTest {
             System.setProperty("user.home", originalUserHome);
         }
     }
+
+    @Test
+    void readsArchivedReportJson() {
+        String originalUserHome = System.getProperty("user.home");
+
+        try {
+            Path tempHome = Files.createTempDirectory("javacup-report-json-test");
+            System.setProperty("user.home", tempHome.toString());
+
+            LocalReportArchiveService service = new LocalReportArchiveService(new ObjectMapper());
+            Path archived = service.archive(report());
+
+            LocalArchivedReport archivedReport = service.listReports().stream()
+                    .filter(report -> report.absolutePath().equals(archived.toAbsolutePath().toString()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertTrue(service.readReportJson(archivedReport).has("metadata"));
+        } catch (Exception exception) {
+            throw new AssertionError(exception);
+        } finally {
+            System.setProperty("user.home", originalUserHome);
+        }
+    }
     private ExternalMonitoringReport report() {
         MonitoringSession session = new MonitoringSession(
                 UUID.randomUUID(),

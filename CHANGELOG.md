@@ -8,6 +8,10 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+### Added
+
+- Structured archived report details dialog.
+
 ### Planned
 
 - More advanced heap charts for external monitoring sessions.

@@ -1,10 +1,12 @@
 package io.cutalab.javacup.dashboard.views;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Pre;
@@ -12,6 +14,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -79,6 +82,9 @@ public class ArchivedReportsView extends VerticalLayout {
         reportsGrid.addComponentColumn(this::createPreviewButton)
                 .setHeader("Preview")
                 .setAutoWidth(true);
+        reportsGrid.addComponentColumn(this::createDetailsButton)
+                .setHeader("Details")
+                .setAutoWidth(true);
 
         reportsGrid.addComponentColumn(this::createDownloadLink)
                 .setHeader("Download")
@@ -97,6 +103,89 @@ public class ArchivedReportsView extends VerticalLayout {
                 .set("white-space", "nowrap");
 
         return path;
+    }
+    private Button createDetailsButton(LocalArchivedReport report) {
+        return new Button("Details", event -> showReportDetails(report));
+    }
+
+    private void showReportDetails(LocalArchivedReport report) {
+        try {
+            JsonNode root = archiveService.readReportJson(report);
+
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Archived report details");
+            dialog.setWidth("min(1000px, 95vw)");
+            dialog.setMaxHeight("90vh");
+
+            VerticalLayout content = new VerticalLayout();
+            content.setPadding(false);
+            content.setSpacing(true);
+            content.setWidthFull();
+
+            H2 fileName = new H2(report.fileName());
+            fileName.getStyle()
+                    .set("font-size", "var(--lumo-font-size-m)")
+                    .set("margin", "0");
+
+            content.add(fileName);
+            content.add(createJsonSection("Metadata", root.path("metadata")));
+            content.add(createJsonSection("Session", root.path("session")));
+            content.add(createJsonSection("Heap / Metaspace", root.path("heapInfo")));
+            content.add(createJsonSection("Uptime", root.path("uptime")));
+            content.add(createJsonSection("Summary", root.path("summary")));
+            content.add(createJsonSection("Diagnostics", root.path("warnings")));
+            content.add(createJsonSection("Samples", root.path("samples")));
+
+            Scroller scroller = new Scroller(content);
+            scroller.setWidthFull();
+            scroller.setMaxHeight("70vh");
+
+            Button closeButton = new Button("Close", event -> dialog.close());
+            HorizontalLayout footer = new HorizontalLayout(closeButton);
+            footer.setWidthFull();
+            footer.setJustifyContentMode(JustifyContentMode.END);
+
+            dialog.add(scroller, footer);
+            dialog.open();
+        } catch (RuntimeException exception) {
+            Notification.show("Unable to load report details: " + exception.getMessage());
+        }
+    }
+
+    private VerticalLayout createJsonSection(String title, JsonNode node) {
+        VerticalLayout section = new VerticalLayout();
+        section.setPadding(false);
+        section.setSpacing(false);
+        section.setWidthFull();
+
+        H3 heading = new H3(title);
+        heading.getStyle()
+                .set("font-size", "var(--lumo-font-size-m)")
+                .set("margin-bottom", "var(--lumo-space-xs)");
+
+        Pre value = new Pre(formatJsonNode(node));
+        value.getStyle()
+                .set("width", "100%")
+                .set("max-height", "260px")
+                .set("overflow", "auto")
+                .set("white-space", "pre-wrap")
+                .set("word-break", "break-word")
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("padding", "var(--lumo-space-m)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("font-size", "var(--lumo-font-size-s)");
+
+        section.add(heading, value);
+
+        return section;
+    }
+
+    private String formatJsonNode(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return "Unavailable";
+        }
+
+        return node.toPrettyString();
     }
     private Button createPreviewButton(LocalArchivedReport report) {
         return new Button("Preview", event -> showReportPreview(report));
