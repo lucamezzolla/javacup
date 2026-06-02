@@ -23,7 +23,19 @@ public class GuideView extends VerticalLayout {
                 "Javacup is a local-first JVM memory diagnostic tool. Use this page as a quick map: read the short sections, then follow the links when you want deeper details."
         );
 
-        H2 firstStepsTitle = new H2("First steps");
+        H2 navigationTitle = sectionTitle("Quick navigation", "quick-navigation");
+        UnorderedList navigation = new UnorderedList(
+                linkItem("First steps", "#first-steps"),
+                linkItem("Suggested workflow", "#suggested-workflow"),
+                linkItem("How to read diagnostics", "#diagnostics"),
+                linkItem("Which diagnostic am I seeing?", "#diagnostic-codes"),
+                linkItem("Common problems", "#common-problems"),
+                linkItem("Reports and comparison", "#reports"),
+                linkItem("Learn more", "#learn-more"),
+                linkItem("Privacy", "#privacy")
+        );
+
+        H2 firstStepsTitle = sectionTitle("First steps", "first-steps");
         UnorderedList firstSteps = new UnorderedList(
                 new ListItem("Open Processes and select a running Java process."),
                 new ListItem("Open external metrics to read heap, Metaspace and uptime through local JDK tools."),
@@ -32,7 +44,21 @@ public class GuideView extends VerticalLayout {
                 new ListItem("Compare archived reports to explain what changed between two snapshots.")
         );
 
-        H2 diagnosticsTitle = new H2("How to read diagnostics");
+        H2 workflowTitle = sectionTitle("Suggested workflow", "suggested-workflow");
+        UnorderedList workflow = new UnorderedList(
+                new ListItem("Start with Processes and choose the JVM you want to observe."),
+                new ListItem("Read external metrics once to confirm that probes work."),
+                new ListItem("Collect samples while reproducing the behavior you want to investigate."),
+                new ListItem("Generate a report when the interesting state is visible."),
+                new ListItem("Generate a second report later if you want to compare growth or diagnostic changes."),
+                new ListItem("Use Archived reports to preview, download and compare local JSON snapshots.")
+        );
+
+        Paragraph whenToReport = new Paragraph(
+                "Save a report before and after an important action, after a memory spike, when a diagnostic appears, or before sharing evidence with another developer."
+        );
+
+        H2 diagnosticsTitle = sectionTitle("How to read diagnostics", "diagnostics");
         UnorderedList diagnostics = new UnorderedList(
                 new ListItem("PROBE_* means Javacup could not read data from the selected JVM."),
                 new ListItem("UPTIME_PROBE_* means the VM.uptime probe failed."),
@@ -41,7 +67,7 @@ public class GuideView extends VerticalLayout {
                 new ListItem("Growth diagnostics become more useful after collecting multiple samples over time.")
         );
 
-        H2 diagnosticCodesTitle = new H2("Which diagnostic am I seeing?");
+        H2 diagnosticCodesTitle = sectionTitle("Which diagnostic am I seeing?", "diagnostic-codes");
         UnorderedList diagnosticCodes = new UnorderedList(
                 new ListItem("PROBE_PROCESS_NOT_FOUND: the selected JVM ended or cannot be found anymore."),
                 new ListItem("PROBE_ATTACH_FAILED: Javacup could not attach to the target JVM with the current user/environment."),
@@ -53,7 +79,7 @@ public class GuideView extends VerticalLayout {
                 new ListItem("HEAP_STRUCTURED_INFO_AVAILABLE: the heap probe returned parseable structured values.")
         );
 
-        H2 commonProblemsTitle = new H2("Common problems");
+        H2 commonProblemsTitle = sectionTitle("Common problems", "common-problems");
         UnorderedList commonProblems = new UnorderedList(
                 new ListItem("PROCESS_NOT_FOUND: the target process ended or is no longer visible. Refresh Processes and select a running JVM."),
                 new ListItem("ATTACH_FAILED: run Javacup with the same operating-system user as the target JVM and check attach permissions."),
@@ -61,21 +87,21 @@ public class GuideView extends VerticalLayout {
                 new ListItem("Unsupported parser format: keep the raw output; it can be used to improve parser support.")
         );
 
-        H2 reportsTitle = new H2("Reports and comparison");
+        H2 reportsTitle = sectionTitle("Reports and comparison", "reports");
         Paragraph reports = new Paragraph(
                 "Reports are local JSON snapshots. They keep metadata, probe outputs, parsed values, diagnostics and recent samples. Use archived report comparison to understand whether memory usage, warnings or probe state changed."
         );
 
-        H2 learnMoreTitle = new H2("Learn more");
+        H2 learnMoreTitle = sectionTitle("Learn more", "learn-more");
         UnorderedList learnMore = new UnorderedList(
-                linkItem("jcmd diagnostic command tool", "https://docs.oracle.com/en/java/javase/21/docs/specs/man/jcmd.html"),
-                linkItem("Java troubleshooting tools", "https://docs.oracle.com/en/java/javase/21/troubleshoot/diagnostic-tools.html"),
-                linkItem("Java Flight Recorder", "https://docs.oracle.com/en/java/javase/21/jfapi/flight-recorder.html"),
-                linkItem("Garbage collection tuning guide", "https://docs.oracle.com/en/java/javase/21/gctuning/"),
-                linkItem("JSON format overview", "https://www.json.org/json-en.html")
+                externalLinkItem("jcmd diagnostic command tool", "https://docs.oracle.com/en/java/javase/21/docs/specs/man/jcmd.html"),
+                externalLinkItem("Java troubleshooting tools", "https://docs.oracle.com/en/java/javase/21/troubleshoot/diagnostic-tools.html"),
+                externalLinkItem("Java Flight Recorder", "https://docs.oracle.com/en/java/javase/21/jfapi/flight-recorder.html"),
+                externalLinkItem("Garbage collection tuning guide", "https://docs.oracle.com/en/java/javase/21/gctuning/"),
+                externalLinkItem("JSON format overview", "https://www.json.org/json-en.html")
         );
 
-        H2 privacyTitle = new H2("Privacy");
+        H2 privacyTitle = sectionTitle("Privacy", "privacy");
         Paragraph privacy = new Paragraph(
                 "Javacup is designed for local use. It observes local JVMs and writes local reports. Review report contents before sharing them outside your machine."
         );
@@ -83,8 +109,13 @@ public class GuideView extends VerticalLayout {
         add(
                 title,
                 intro,
+                navigationTitle,
+                navigation,
                 firstStepsTitle,
                 firstSteps,
+                workflowTitle,
+                workflow,
+                whenToReport,
                 diagnosticsTitle,
                 diagnostics,
                 diagnosticCodesTitle,
@@ -100,7 +131,18 @@ public class GuideView extends VerticalLayout {
         );
     }
 
+    private H2 sectionTitle(String text, String id) {
+        H2 title = new H2(text);
+        title.getElement().setAttribute("id", id);
+
+        return title;
+    }
+
     private ListItem linkItem(String text, String url) {
+        return new ListItem(new Anchor(url, text));
+    }
+
+    private ListItem externalLinkItem(String text, String url) {
         Anchor anchor = new Anchor(url, text);
         anchor.setTarget("_blank");
         anchor.getElement().setAttribute("rel", "noopener noreferrer");
