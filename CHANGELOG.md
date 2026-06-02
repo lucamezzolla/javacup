@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Lightweight Metaspace usage trend chart for external samples.
 - Metaspace trend summary for external samples.
 - Donation page with PayPal support link.
 - Tests for Metaspace trend diagnostics.

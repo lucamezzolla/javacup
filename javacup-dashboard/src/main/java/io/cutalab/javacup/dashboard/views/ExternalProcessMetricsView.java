@@ -48,6 +48,7 @@ import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.function.Function;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -122,6 +123,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span maxMetaspaceUsedSummary = new Span("Max Metaspace used: unavailable");
     private final Span metaspaceGrowth = new Span("Metaspace growth: unavailable");
     private final Div heapTrendChart = new Div();
+    private final Div metaspaceTrendChart = new Div();
     private final Grid<ExternalMetricSample> samplesGrid = new Grid<>(ExternalMetricSample.class, false);
 
     private final Div rawHeapInfo = new Div();
@@ -178,6 +180,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         configureSamplesGrid();
         configureReportPreviewDialog();
         styleHeapTrendChart();
+        styleMetaspaceTrendChart();
 
         styleTechnicalBlock(rawHeapInfo);
         styleTechnicalBlock(uptimeInfo);
@@ -214,6 +217,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Heap trend summary", sampleCount, firstHeapUsed, latestHeapUsed, minHeapUsed, maxHeapUsed, heapGrowth),
                 section("Metaspace trend summary", firstMetaspaceUsed, latestMetaspaceUsed, minMetaspaceUsedSummary, maxMetaspaceUsedSummary, metaspaceGrowth),
                 section("Heap usage trend", new Paragraph("Lightweight chart based on the latest retained external samples."), heapTrendChart),
+                section("Metaspace usage trend", new Paragraph("Lightweight chart based on the latest retained external samples."), metaspaceTrendChart),
                 section("Recent external samples", new Paragraph("In-memory samples collected while this page is open. Oldest samples are discarded when the session buffer is full."), samplesRetained, samplesGrid),
                 section("Raw heap information", new Paragraph("Source: jcmd <pid> GC.heap_info"), rawHeapInfo),
                 section("VM uptime", new Paragraph("Source: jcmd <pid> VM.uptime"), uptimeInfo),
@@ -374,6 +378,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         latestSampleSummary = sampleSummaryService.summarize(latestSamples);
         updateSampleSummary(latestSampleSummary);
         renderHeapTrendChart(latestSamples);
+        renderMetaspaceTrendChart(latestSamples);
         samplesRetained.setText("Samples retained: " + latestSamples.size() + " / " + sampleService.maxSamplesPerSession());
         samplesGrid.setItems(latestSamples.reversed());
 
@@ -672,6 +677,144 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         vmUptimeSeconds.setText("VM uptime seconds: " + (uptime.uptimeSeconds() == null ? "unavailable" : uptime.uptimeSeconds()));
     }
 
+    private void renderMetaspaceTrendChart(List<ExternalMetricSample> samples) {
+        metaspaceTrendChart.removeAll();
+
+        List<ExternalMetricSample> visibleSamples = samples.stream()
+                .filter(sample -> sample.metaspaceUsedMb() != null)
+                .skip(Math.max(0, samples.size() - 40))
+                .toList();
+
+        if (visibleSamples.isEmpty()) {
+            metaspaceTrendChart.setText("No Metaspace samples available yet.");
+            return;
+        }
+
+        renderMetricTrendChart(
+                metaspaceTrendChart,
+                visibleSamples,
+                "Y: Metaspace used (MB)",
+                "Metaspace",
+                ExternalMetricSample::metaspaceUsedMb
+        );
+    }
+
+    private void renderMetricTrendChart(
+            Div target,
+            List<ExternalMetricSample> visibleSamples,
+            String yAxisTitle,
+            String metricLabel,
+            Function<ExternalMetricSample, Long> valueExtractor
+    ) {
+        target.removeAll();
+
+        long minValue = visibleSamples.stream()
+                .map(valueExtractor)
+                .filter(value -> value != null)
+                .min(Long::compareTo)
+                .orElse(0L);
+
+        long maxValue = visibleSamples.stream()
+                .map(valueExtractor)
+                .filter(value -> value != null)
+                .max(Long::compareTo)
+                .orElse(1L);
+
+        long latestValue = valueExtractor.apply(visibleSamples.getLast());
+
+        Span yAxisLabel = new Span(yAxisTitle);
+        yAxisLabel.getStyle()
+                .set("display", "block")
+                .set("font-weight", "600")
+                .set("margin-bottom", "var(--lumo-space-xs)");
+
+        HorizontalLayout chartRow = new HorizontalLayout();
+        chartRow.setPadding(false);
+        chartRow.setSpacing(false);
+        chartRow.setWidthFull();
+        chartRow.setAlignItems(Alignment.STRETCH);
+        chartRow.getStyle().set("gap", "var(--lumo-space-s)");
+
+        VerticalLayout yScale = new VerticalLayout();
+        yScale.setPadding(false);
+        yScale.setSpacing(false);
+        yScale.setWidth("80px");
+        yScale.setHeight("140px");
+        yScale.getStyle()
+                .set("font-size", "var(--lumo-font-size-xs)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        Span maxLabel = new Span(maxValue + " MB");
+        Span middleLabel = new Span(((maxValue + minValue) / 2) + " MB");
+        Span minLabel = new Span(minValue + " MB");
+
+        yScale.add(maxLabel, new Span(""), middleLabel, new Span(""), minLabel);
+        yScale.expand(yScale.getComponentAt(1), yScale.getComponentAt(3));
+
+        HorizontalLayout bars = new HorizontalLayout();
+        bars.setPadding(false);
+        bars.setSpacing(false);
+        bars.setWidthFull();
+        bars.setHeight("140px");
+        bars.setAlignItems(Alignment.END);
+        bars.getStyle()
+                .set("gap", "3px")
+                .set("border", "1px solid var(--lumo-contrast-20pct)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("padding", "var(--lumo-space-s)")
+                .set("background", "var(--lumo-contrast-5pct)");
+
+        long visibleRange = Math.max(1L, maxValue - minValue);
+
+        for (ExternalMetricSample sample : visibleSamples) {
+            long value = valueExtractor.apply(sample);
+            int heightPercentage = maxValue == minValue
+                    ? 50
+                    : Math.max(4, (int) Math.round((value - minValue) * 100.0 / visibleRange));
+
+            Div bar = new Div();
+            bar.getStyle()
+                    .set("height", heightPercentage + "%")
+                    .set("min-width", "6px")
+                    .set("flex", "1")
+                    .set("border-radius", "var(--lumo-border-radius-s)")
+                    .set("background", "var(--lumo-primary-color-50pct)");
+
+            bar.getElement().setAttribute("title", metricLabel + ": " + value + " MB at " + SAMPLE_TIME_FORMATTER.format(sample.timestamp()));
+
+            bars.add(bar);
+        }
+
+        chartRow.add(yScale, bars);
+        chartRow.expand(bars);
+
+        Span xAxisLabel = new Span("X: recent samples, oldest → newest");
+        xAxisLabel.getStyle()
+                .set("display", "block")
+                .set("margin-top", "var(--lumo-space-xs)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        Span caption = new Span(
+                "Showing latest " + visibleSamples.size()
+                        + " samples. Min: " + minValue
+                        + " MB, Max: " + maxValue
+                        + " MB, Latest: " + latestValue
+                        + " MB."
+        );
+        caption.getStyle()
+                .set("display", "block")
+                .set("margin-top", "var(--lumo-space-xs)")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        target.add(yAxisLabel, chartRow, xAxisLabel, caption);
+    }
+
+    private void styleMetaspaceTrendChart() {
+        metaspaceTrendChart.setWidthFull();
+        metaspaceTrendChart.getStyle()
+                .set("max-width", "100%")
+                .set("padding-bottom", "var(--lumo-space-s)");
+    }
     private void updateSampleSummary(ExternalMetricSampleSummary summary) {
         sampleCount.setText("Samples collected: " + summary.sampleCount());
 
