@@ -66,7 +66,8 @@ public class GuideView extends VerticalLayout {
                 new ListItem("UPTIME_PROBE_* means the VM.uptime probe failed."),
                 new ListItem("HEAP_PARSER_UNSUPPORTED_FORMAT means the probe succeeded, but Javacup does not support that GC.heap_info format yet."),
                 new ListItem("HEAP_NEAR_MAX means heap usage is close to the committed or available heap reported by the probe."),
-                new ListItem("Growth diagnostics become more useful after collecting multiple samples over time.")
+                new ListItem("Growth diagnostics become more useful after collecting multiple samples over time."),
+                new ListItem("INSUFFICIENT_SAMPLES_FOR_TREND means Javacup needs more samples before trend diagnostics are reliable.")
         );
 
         H2 diagnosticCodesTitle = sectionTitle("Which diagnostic am I seeing?", "diagnostic-codes");
@@ -78,7 +79,8 @@ public class GuideView extends VerticalLayout {
                 new ListItem("UPTIME_PROBE_*: the same kind of probe issue happened while reading VM uptime."),
                 new ListItem("HEAP_PARSER_UNSUPPORTED_FORMAT: jcmd returned data, but Javacup does not support that heap output format yet."),
                 new ListItem("HEAP_NEAR_MAX: heap usage is high compared with the heap value reported by the JVM."),
-                new ListItem("HEAP_STRUCTURED_INFO_AVAILABLE: the heap probe returned parseable structured values.")
+                new ListItem("HEAP_STRUCTURED_INFO_AVAILABLE: the heap probe returned parseable structured values."),
+                new ListItem("INSUFFICIENT_SAMPLES_FOR_TREND: collect more samples before trusting trend diagnostics.")
         );
 
         H2 commonProblemsTitle = sectionTitle("Common problems", "common-problems");
