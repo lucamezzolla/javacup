@@ -34,6 +34,7 @@ import io.cutalab.javacup.dashboard.ExternalHeapInfoService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleService;
 import io.cutalab.javacup.dashboard.ExternalMetricSampleSummaryService;
 import io.cutalab.javacup.dashboard.ExternalMonitoringReportService;
+import io.cutalab.javacup.dashboard.LocalReportArchiveService;
 import io.cutalab.javacup.dashboard.ExternalProcessProbeService;
 import io.cutalab.javacup.dashboard.ExternalVmUptimeService;
 import io.cutalab.javacup.dashboard.ExternalSampleDiagnosticsService;
@@ -72,6 +73,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final ExternalMetricSampleService sampleService;
     private final ExternalMetricSampleSummaryService sampleSummaryService;
     private final ExternalMonitoringReportService reportService;
+    private final LocalReportArchiveService reportArchiveService;
 
     private final ObjectMapper reportObjectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -153,8 +155,8 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
             MonitoringSessionService monitoringSessionService,
             ExternalMetricSampleService sampleService,
             ExternalMetricSampleSummaryService sampleSummaryService,
-            ExternalMonitoringReportService reportService
-    ) {
+            ExternalMonitoringReportService reportService,
+            LocalReportArchiveService reportArchiveService) {
         this.processService = processService;
         this.probeService = probeService;
         this.uptimeService = uptimeService;
@@ -165,6 +167,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         this.sampleService = sampleService;
         this.sampleSummaryService = sampleSummaryService;
         this.reportService = reportService;
+        this.reportArchiveService = reportArchiveService;
 
         setSizeFull();
         setPadding(true);
@@ -174,6 +177,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         Button refreshButton = new Button("Refresh metrics", event -> refreshMetrics(true));
         Button stopButton = new Button("Stop session", event -> stopSession());
         Button previewReportButton = new Button("Preview report", event -> previewReport());
+        Button archiveReportButton = new Button("Archive JSON report", event -> archiveReport());
 
         configureDiagnosticsGrid();
         configureSamplesGrid();
@@ -204,7 +208,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         add(
                 title,
                 new Paragraph("This page reads external JVM information from a selected Java process using local JDK diagnostic commands."),
-                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, downloadReportLink),
+                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, archiveReportButton, downloadReportLink),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
                 section("Probe status", processAvailability, probeAvailability, probeHint),
@@ -432,6 +436,21 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     }
 
 
+    private void archiveReport() {
+        ExternalMonitoringReport report = createCurrentReport();
+
+        if (report == null) {
+            Notification.show("No report data available yet.");
+            return;
+        }
+
+        try {
+            java.nio.file.Path archivedPath = reportArchiveService.archive(report);
+            Notification.show("Report archived locally: " + archivedPath);
+        } catch (IllegalStateException exception) {
+            Notification.show("Unable to archive report: " + exception.getMessage());
+        }
+    }
     private void previewReport() {
         ExternalMonitoringReport report = createCurrentReport();
 

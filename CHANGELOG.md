@@ -27,6 +27,7 @@ It is not production-ready.
 
 ### Added
 
+- Local archive for generated external monitoring JSON reports.
 - Shared project URL exposed through `AppInfo` for reports.
 - Report metadata with application name, version, project URL and generation timestamp.
 - Demo Metaspace mode for testing Metaspace trend diagnostics.

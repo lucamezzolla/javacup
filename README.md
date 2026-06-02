@@ -77,6 +77,7 @@ Your support helps improve documentation, testing, diagnostics, UI polish, examp
 - External monitoring report model
 - Report preview dialog
 - JSON download for external monitoring reports
+- Local archive for generated external monitoring JSON reports
 - Report metadata with application name, version, project URL and generation timestamp
 - Shared project URL exposed through `AppInfo` for reports
 - Current JVM memory metrics for the Javacup process
