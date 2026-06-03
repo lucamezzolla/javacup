@@ -173,6 +173,7 @@ public class ExternalMonitoringReportService {
         builder.append(System.lineSeparator());
 
         appendDiagnosticSummary(builder, report.diagnostics());
+        appendRecommendedNextActions(builder, report);
 
         builder.append("Diagnostics").append(System.lineSeparator());
         for (DiagnosticWarning diagnostic : report.diagnostics()) {
@@ -242,6 +243,58 @@ public class ExternalMonitoringReportService {
 
         return report.diagnostics().stream()
                 .anyMatch(diagnostic -> code.equals(diagnostic.code()));
+    }
+
+    private void appendRecommendedNextActions(StringBuilder builder, ExternalMonitoringReport report) {
+        builder.append("Recommended next actions").append(System.lineSeparator());
+
+        boolean hasAction = false;
+
+        if (hasDiagnosticCode(report, "INSUFFICIENT_SAMPLES_FOR_TREND")) {
+            builder.append("- Collect more samples before relying on trend diagnostics.").append(System.lineSeparator());
+            hasAction = true;
+        }
+
+        if (hasDiagnosticCode(report, "PARTIAL_SAMPLE_DATA")) {
+            builder.append("- Check probe availability and raw output because some sample values are missing.").append(System.lineSeparator());
+            hasAction = true;
+        }
+
+        if (hasDiagnosticCode(report, "HEAP_SESSION_GROWING") || hasDiagnosticCode(report, "HEAP_NEAR_MAX")) {
+            builder.append("- Keep observing heap after workload stabilization or garbage collection; inspect retained collections, caches, sessions and buffers if growth continues.").append(System.lineSeparator());
+            hasAction = true;
+        }
+
+        if (hasDiagnosticCode(report, "METASPACE_SESSION_GROWING")) {
+            builder.append("- Inspect class loading behavior, generated classes, dynamic proxies, redeploy cycles and custom class loaders.").append(System.lineSeparator());
+            hasAction = true;
+        }
+
+        if (hasAnyDiagnosticCodePrefix(report, "PROBE_") || hasAnyDiagnosticCodePrefix(report, "UPTIME_PROBE_")) {
+            builder.append("- Verify that the target JVM is still alive, the current user can attach to it and the local JDK provides jcmd.").append(System.lineSeparator());
+            hasAction = true;
+        }
+
+        if (hasDiagnosticCode(report, "HEAP_PARSER_UNSUPPORTED_FORMAT")) {
+            builder.append("- Keep the raw GC.heap_info output; it can be used to improve parser support for this JVM/GC format.").append(System.lineSeparator());
+            hasAction = true;
+        }
+
+        if (!hasAction) {
+            builder.append("- No urgent follow-up action detected from current diagnostics. Continue observing if the behavior is still under investigation.").append(System.lineSeparator());
+        }
+
+        builder.append(System.lineSeparator());
+    }
+
+    private boolean hasAnyDiagnosticCodePrefix(ExternalMonitoringReport report, String prefix) {
+        if (report == null || report.diagnostics() == null) {
+            return false;
+        }
+
+        return report.diagnostics().stream()
+                .filter(diagnostic -> diagnostic.code() != null)
+                .anyMatch(diagnostic -> diagnostic.code().startsWith(prefix));
     }
 
     private void appendDiagnosticSummary(StringBuilder builder, List<DiagnosticWarning> diagnostics) {
