@@ -12,6 +12,8 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Report readable preview includes a trend interpretation section for sample quality, heap and Metaspace.
+
 - Report readable preview includes a diagnostic summary with severity counts and diagnostic codes.
 
 ### Planned

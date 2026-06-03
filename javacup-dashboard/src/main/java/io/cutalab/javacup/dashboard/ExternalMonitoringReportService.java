@@ -156,6 +156,8 @@ public class ExternalMonitoringReportService {
         builder.append("- Probe failure kind: ").append(valueOrUnavailable(report.latestHeapInfo().probeFailureKind())).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
+        appendTrendInterpretation(builder, report);
+
         builder.append("Trend summary").append(System.lineSeparator());
         builder.append("- Samples: ").append(report.sampleSummary().sampleCount()).append(System.lineSeparator());
         builder.append("- First heap used: ").append(formatMb(report.sampleSummary().firstHeapUsedMb())).append(System.lineSeparator());
@@ -193,6 +195,53 @@ public class ExternalMonitoringReportService {
         builder.append("Recent samples retained: ").append(report.recentSamples().size()).append(System.lineSeparator());
 
         return builder.toString();
+    }
+
+    private void appendTrendInterpretation(StringBuilder builder, ExternalMonitoringReport report) {
+        builder.append("Trend interpretation").append(System.lineSeparator());
+
+        if (hasDiagnosticCode(report, "INSUFFICIENT_SAMPLES_FOR_TREND")) {
+            builder.append("- Sample quality: not enough samples for reliable trend interpretation.").append(System.lineSeparator());
+        } else if (hasDiagnosticCode(report, "PARTIAL_SAMPLE_DATA")) {
+            builder.append("- Sample quality: sample data is partial; trend interpretation may be weaker.").append(System.lineSeparator());
+        } else {
+            builder.append("- Sample quality: enough sample data for basic trend interpretation.").append(System.lineSeparator());
+        }
+
+        builder.append("- Heap trend: ")
+                .append(interpretedGrowth(report.sampleSummary().heapGrowthMb(), "heap"))
+                .append(System.lineSeparator());
+
+        builder.append("- Metaspace trend: ")
+                .append(interpretedGrowth(report.sampleSummary().metaspaceGrowthMb(), "Metaspace"))
+                .append(System.lineSeparator());
+
+        builder.append(System.lineSeparator());
+    }
+
+    private String interpretedGrowth(Long growthMb, String label) {
+        if (growthMb == null) {
+            return label + " growth is unavailable.";
+        }
+
+        if (growthMb > 0) {
+            return label + " grew by " + growthMb + " MB during the retained samples.";
+        }
+
+        if (growthMb < 0) {
+            return label + " decreased by " + Math.abs(growthMb) + " MB during the retained samples.";
+        }
+
+        return label + " stayed stable in the retained samples.";
+    }
+
+    private boolean hasDiagnosticCode(ExternalMonitoringReport report, String code) {
+        if (report == null || report.diagnostics() == null) {
+            return false;
+        }
+
+        return report.diagnostics().stream()
+                .anyMatch(diagnostic -> code.equals(diagnostic.code()));
     }
 
     private void appendDiagnosticSummary(StringBuilder builder, List<DiagnosticWarning> diagnostics) {
