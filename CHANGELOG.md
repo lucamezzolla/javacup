@@ -8,6 +8,15 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+## [0.2.0-alpha.3-SNAPSHOT]
+
+### Planned
+
+- Improve report preview/export readability.
+- Add more actionable archived report comparison interpretations.
+- Continue sample-based diagnostic improvements.
+- Keep the internal Guide aligned with every new diagnostic code.
+
 ## [0.2.0-alpha.2] - 2026-06-02
 
 - `v0.2.0-alpha.2` focuses on sample-quality diagnostics, Guide alignment and archived report comparison explanations.

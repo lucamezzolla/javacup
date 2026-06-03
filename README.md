@@ -21,7 +21,7 @@ Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.
 
 Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 
-Current released version: `0.2.0-alpha.2`.
+Latest released version: `0.2.0-alpha.2`.
 
 
 
@@ -521,11 +521,11 @@ The `0.1.x` alpha line is considered the first local MVP line and is closed by `
 
 The latest stable 0.2.x checkpoint is `v0.2.0-alpha.2`.
 
-Current released version:
+Latest released version:
 
 - `0.2.0-alpha.2`
 
-Next development version:
+Current development version:
 
 - `0.2.0-alpha.3-SNAPSHOT`
 
@@ -564,11 +564,11 @@ Highlights:
 
 `v0.2.0-alpha.2` has been tagged and pushed.
 
-Development can now resume on `0.2.0-alpha.3-SNAPSHOT`.
+Development has resumed on `0.2.0-alpha.3-SNAPSHOT`.
 
 ### Suggested next roadmap items
 
-- Start `0.2.0-alpha.3-SNAPSHOT`.
+- Continue `0.2.0-alpha.3-SNAPSHOT` development.
 - Improve report preview/export readability.
 - Add more actionable interpretations for archived report comparison.
 - Continue improving sample-based diagnostics.
