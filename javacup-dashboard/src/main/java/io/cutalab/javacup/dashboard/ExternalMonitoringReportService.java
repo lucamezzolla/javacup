@@ -174,6 +174,7 @@ public class ExternalMonitoringReportService {
         builder.append("- Metaspace growth: ").append(formatSignedMb(report.sampleSummary().metaspaceGrowthMb())).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
+        appendReportVerdict(builder, report.diagnostics());
         appendDiagnosticSummary(builder, report.diagnostics());
         appendRecommendedNextActions(builder, report);
 
@@ -328,6 +329,36 @@ public class ExternalMonitoringReportService {
         return report.diagnostics().stream()
                 .filter(diagnostic -> diagnostic.code() != null)
                 .anyMatch(diagnostic -> diagnostic.code().startsWith(prefix));
+    }
+
+    private void appendReportVerdict(StringBuilder builder, List<DiagnosticWarning> diagnostics) {
+        List<DiagnosticWarning> safeDiagnostics = diagnostics == null ? List.of() : diagnostics;
+
+        builder.append("Report verdict").append(System.lineSeparator());
+        builder.append("- ").append(reportVerdict(safeDiagnostics)).append(System.lineSeparator());
+        builder.append(System.lineSeparator());
+    }
+
+    private String reportVerdict(List<DiagnosticWarning> diagnostics) {
+        if (diagnostics.isEmpty()) {
+            return "No diagnostics reported.";
+        }
+
+        if (hasSeverity(diagnostics, "CRITICAL")) {
+            return "Needs immediate attention: at least one critical diagnostic is present.";
+        }
+
+        if (hasSeverity(diagnostics, "WARNING")) {
+            return "Review recommended: warning diagnostics are present.";
+        }
+
+        return "Informational: diagnostics are present, but no warnings or critical issues were reported.";
+    }
+
+    private boolean hasSeverity(List<DiagnosticWarning> diagnostics, String severityName) {
+        return diagnostics.stream()
+                .filter(diagnostic -> diagnostic.severity() != null)
+                .anyMatch(diagnostic -> severityName.equals(diagnostic.severity().name()));
     }
 
     private void appendDiagnosticSummary(StringBuilder builder, List<DiagnosticWarning> diagnostics) {
