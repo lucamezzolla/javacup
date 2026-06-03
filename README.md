@@ -573,4 +573,4 @@ Development has resumed on `0.2.0-alpha.3-SNAPSHOT`.
 - Add more actionable interpretations for archived report comparison.
 - Continue improving sample-based diagnostics.
 - Keep the internal Guide aligned with every new diagnostic code.
-
+- Report readable preview includes a diagnostic summary with severity counts and diagnostic codes.

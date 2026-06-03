@@ -170,6 +170,8 @@ public class ExternalMonitoringReportService {
         builder.append("- Metaspace growth: ").append(formatSignedMb(report.sampleSummary().metaspaceGrowthMb())).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
+        appendDiagnosticSummary(builder, report.diagnostics());
+
         builder.append("Diagnostics").append(System.lineSeparator());
         for (DiagnosticWarning diagnostic : report.diagnostics()) {
             builder.append("- ")
@@ -191,6 +193,47 @@ public class ExternalMonitoringReportService {
         builder.append("Recent samples retained: ").append(report.recentSamples().size()).append(System.lineSeparator());
 
         return builder.toString();
+    }
+
+    private void appendDiagnosticSummary(StringBuilder builder, List<DiagnosticWarning> diagnostics) {
+        List<DiagnosticWarning> safeDiagnostics = diagnostics == null ? List.of() : diagnostics;
+
+        builder.append("Diagnostic summary").append(System.lineSeparator());
+        builder.append("- Total diagnostics: ").append(safeDiagnostics.size()).append(System.lineSeparator());
+        builder.append("- INFO: ").append(countDiagnosticsWithSeverity(safeDiagnostics, "INFO")).append(System.lineSeparator());
+        builder.append("- WARNING: ").append(countDiagnosticsWithSeverity(safeDiagnostics, "WARNING")).append(System.lineSeparator());
+        builder.append("- CRITICAL: ").append(countDiagnosticsWithSeverity(safeDiagnostics, "CRITICAL")).append(System.lineSeparator());
+        builder.append("- Codes: ").append(formatDiagnosticCodes(safeDiagnostics)).append(System.lineSeparator());
+        builder.append(System.lineSeparator());
+    }
+
+    private long countDiagnosticsWithSeverity(List<DiagnosticWarning> diagnostics, String severityName) {
+        return diagnostics.stream()
+                .filter(diagnostic -> diagnostic.severity() != null)
+                .filter(diagnostic -> severityName.equals(diagnostic.severity().name()))
+                .count();
+    }
+
+    private String formatDiagnosticCodes(List<DiagnosticWarning> diagnostics) {
+        if (diagnostics.isEmpty()) {
+            return "none";
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (DiagnosticWarning diagnostic : diagnostics) {
+            if (diagnostic.code() == null || diagnostic.code().isBlank()) {
+                continue;
+            }
+
+            if (!builder.isEmpty()) {
+                builder.append(", ");
+            }
+
+            builder.append(diagnostic.code());
+        }
+
+        return builder.isEmpty() ? "none" : builder.toString();
     }
 
     private String valueOrUnavailable(String value) {

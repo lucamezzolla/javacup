@@ -10,6 +10,10 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [0.2.0-alpha.3-SNAPSHOT]
 
+### Added
+
+- Report readable preview includes a diagnostic summary with severity counts and diagnostic codes.
+
 ### Planned
 
 - Improve report preview/export readability.
