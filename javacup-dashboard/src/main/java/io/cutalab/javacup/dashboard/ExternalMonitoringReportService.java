@@ -140,6 +140,8 @@ public class ExternalMonitoringReportService {
         builder.append("- Last updated at: ").append(report.session().lastUpdatedAt()).append(System.lineSeparator());
         builder.append(System.lineSeparator());
 
+        appendProbeSummary(builder, report);
+
         builder.append("VM uptime").append(System.lineSeparator());
         builder.append("- Uptime: ").append(report.latestVmUptime() == null ? "unavailable" : report.latestVmUptime().displayValue()).append(System.lineSeparator());
         builder.append("- Uptime seconds: ").append(report.latestVmUptime() == null || report.latestVmUptime().uptimeSeconds() == null ? "unavailable" : report.latestVmUptime().uptimeSeconds()).append(System.lineSeparator());
@@ -196,6 +198,37 @@ public class ExternalMonitoringReportService {
         builder.append("Recent samples retained: ").append(report.recentSamples().size()).append(System.lineSeparator());
 
         return builder.toString();
+    }
+
+    private void appendProbeSummary(StringBuilder builder, ExternalMonitoringReport report) {
+        builder.append("Probe summary").append(System.lineSeparator());
+        builder.append("- Session status: ")
+                .append(report.session() == null ? "unavailable" : report.session().status())
+                .append(System.lineSeparator());
+
+        if (report.latestHeapInfo() == null) {
+            builder.append("- Heap probe: unavailable").append(System.lineSeparator());
+        } else {
+            builder.append("- Heap probe status: ")
+                    .append(valueOrUnavailable(report.latestHeapInfo().probeStatus()))
+                    .append(System.lineSeparator());
+            builder.append("- Heap probe failure kind: ")
+                    .append(valueOrUnavailable(report.latestHeapInfo().probeFailureKind()))
+                    .append(System.lineSeparator());
+        }
+
+        if (report.latestVmUptime() == null) {
+            builder.append("- Uptime probe: unavailable").append(System.lineSeparator());
+        } else {
+            builder.append("- Uptime probe status: ")
+                    .append(valueOrUnavailable(report.latestVmUptime().probeStatus()))
+                    .append(System.lineSeparator());
+            builder.append("- Uptime probe failure kind: ")
+                    .append(valueOrUnavailable(report.latestVmUptime().probeFailureKind()))
+                    .append(System.lineSeparator());
+        }
+
+        builder.append(System.lineSeparator());
     }
 
     private void appendTrendInterpretation(StringBuilder builder, ExternalMonitoringReport report) {
