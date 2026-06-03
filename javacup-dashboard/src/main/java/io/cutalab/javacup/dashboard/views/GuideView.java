@@ -32,6 +32,7 @@ public class GuideView extends VerticalLayout {
                 internalLinkItem("Which diagnostic am I seeing?", "diagnostic-codes"),
                 internalLinkItem("Common problems", "common-problems"),
                 internalLinkItem("Reports and comparison", "reports"),
+                internalLinkItem("Report preview", "report-preview"),
                 internalLinkItem("Learn more", "learn-more"),
                 internalLinkItem("Privacy", "privacy"),
                 internalLinkItem("About Javacup", "about")
@@ -99,6 +100,18 @@ public class GuideView extends VerticalLayout {
                 "Reports are local JSON snapshots. They keep metadata, probe outputs, parsed values, diagnostics and recent samples. Use archived report comparison to understand whether memory usage, warnings or probe state changed."
         );
 
+        H2 reportPreviewTitle = sectionTitle("Report preview", "report-preview");
+        Paragraph reportPreviewIntro = new Paragraph(
+                "The readable report preview is a compact human-readable view of the JSON report. It is meant to help you understand the report before downloading, sharing or comparing it."
+        );
+        UnorderedList reportPreview = new UnorderedList(
+                new ListItem("Probe summary shows session status, heap probe status and uptime probe status."),
+                new ListItem("Trend interpretation gives a quick reading of sample quality, heap growth and Metaspace growth."),
+                new ListItem("Diagnostic summary counts diagnostics by severity and lists diagnostic codes."),
+                new ListItem("Recommended next actions turns diagnostic codes into practical follow-up suggestions."),
+                new ListItem("The raw JSON report remains the source of truth for archived comparison and deeper debugging.")
+        );
+
         H2 learnMoreTitle = sectionTitle("Learn more", "learn-more");
         UnorderedList learnMore = new UnorderedList(
                 externalLinkItem("jcmd diagnostic command tool", "https://docs.oracle.com/en/java/javase/21/docs/specs/man/jcmd.html"),
@@ -142,6 +155,9 @@ public class GuideView extends VerticalLayout {
                 commonProblems,
                 reportsTitle,
                 reports,
+                reportPreviewTitle,
+                reportPreviewIntro,
+                reportPreview,
                 learnMoreTitle,
                 learnMore,
                 privacyTitle,
