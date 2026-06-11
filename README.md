@@ -1,523 +1,16 @@
-# Javacup ☕
+# Javacup
 
-**A friendly JVM memory doctor for Java developers.**
+**Javacup** is a local-first JVM memory diagnostic dashboard for Java developers.
 
-[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
-
-> If you find Javacup useful or want to support its development, you can make a small donation through PayPal.  
-> Your support helps improve documentation, testing, safety checks, UI polish and controlled production-readiness.
-
-Javacup is a local-first JVM diagnostic tool designed to help Java developers understand memory behavior, garbage collection trends and suspicious growth patterns through a clean Vaadin dashboard and readable reports.
-
-It does not try to replace advanced profilers such as VisualVM, JDK Mission Control or commercial APM tools. Instead, Javacup focuses on practical diagnostics: it highlights suspicious JVM memory patterns, explains the evidence and helps developers decide what to inspect next.
-
-> Understand your JVM memory before it spills over.
-
----
+Javacup helps inspect local Java processes, collect external JVM memory samples, explain diagnostic signals, generate readable reports, archive JSON reports and compare archived reports locally.
 
 ## Project status
 
-Javacup is **under active construction**. The 0.1.x alpha line is closed by `v0.1.0-alpha.4`.
+Javacup `0.3.0` is complete as a **Local JVM Memory Diagnostic MVP**.
 
-Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
+The first MVP scope is concluded: the application has a working local workflow from process discovery to external JVM inspection, diagnostics, report preview, JSON archive and archived report comparison.
 
-Latest released version: `0.2.0-alpha.2`.
-
-
-## 0.1.x alpha line closure
-
-The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.4`.
-
-This line includes:
-
-- local Vaadin dashboard;
-- Java process discovery;
-- external JVM monitoring through local `jcmd` probes;
-- demo applications for normal, burst, leak and Metaspace scenarios;
-- sample collection;
-- JSON report generation and download;
-- local archived report storage;
-- archived report search by file name and date range;
-- archived report preview and download;
-- archived report comparison with diagnostics severity, interpretation, memory unit selection, sample summary comparison, `jcmd` status notes and report health score.
-
-Development now continues on `0.2.0-SNAPSHOT`, focused on stronger structured JVM diagnostics and less dependence on raw `jcmd` output.
-
-
-This repository currently contains an early development preview. The application already runs locally and includes useful building blocks, but it is not production-ready yet.
-
-Current focus:
-
-- stable local dashboard;
-- Java process discovery;
-- safe external process probing;
-- controlled demo applications;
-- clean UI foundations;
-- readable documentation.
-
-External JVM monitoring is being introduced progressively. Javacup can currently run local `jcmd` probes against a selected Java process, parse a first heap summary, collect in-memory samples, show basic diagnostics and generate a JSON report.
-
----
-
-## Support Javacup
-
-[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
-
-If you find Javacup useful or want to support its development, you can make a small donation through PayPal.
-
-Your support helps improve documentation, testing, diagnostics, UI polish, examples and controlled production-readiness.
-
----
-
-## Current features
-
-- Local Vaadin dashboard running on `127.0.0.1:8787`
-- Donation page with PayPal support link
-- Dashboard theme CSS loaded through Vaadin AppShell configuration
-- Dashboard theme CSS loaded through Vaadin AppShell configuration
-- Local Java process discovery through the Java `ProcessHandle` API
-- Process filtering by PID, application name, type, command or arguments
-- Self-process detection
-- Process detail page at `/processes/{pid}`
-- Local `jcmd` probes for selected Java processes:
-  - `VM.version`
-  - `GC.heap_info`
-  - `VM.uptime`
-- External process metrics page at `/metrics/external/{pid}`
-- Probe status explanation for external JVM metrics
-- External heap summary parsed from `jcmd GC.heap_info`
-- Structured external VM uptime parsed from `jcmd VM.uptime`
-- External monitoring session model
-- Auto-refreshing external process metrics
-- In-memory external metric samples
-- External sample buffer limited to 100 samples per monitoring session
-- Session trend summary for external heap samples
-- Metaspace trend summary for external samples
-- Lightweight Metaspace usage trend chart for external samples
-- Lightweight heap usage trend chart for external samples
-- Basic external diagnostics:
-  - `HEAP_NEAR_MAX`
-  - `HEAP_SESSION_GROWING`
-  - `METASPACE_SESSION_GROWING`
-- External monitoring report model
-- Report preview dialog
-- JSON download for external monitoring reports
-- Local archive for generated external monitoring JSON reports
-- Archived reports view for local JSON report history
-- Archived report preview directly from the dashboard
-- Structured archived report details dialog
-- Archived reports filters by file/path and local-time date range
-- Basic two-report comparison from the archived reports dashboard
-- Delta values in archived report comparison
-- Deterministic interpretation for archived report comparisons
-- Memory unit selector for archived report comparisons
-- Archived report comparison reads current report JSON field names
-- Archived report comparison supports KB-based report memory fields
-- Diagnostics severity comparison for archived reports
-- Selection feedback for archived report comparison
-- Comparison context section for archived report comparison
-- Old and new diagnostics sections in archived report comparison
-- Overall verdict for archived report comparison
-- Diagnostic change summary for archived report comparison
-- Memory risk notes for archived report comparison
-- Sample summary comparison for archived reports
-- jcmd status notes for archived report comparison
-- Report health score for archived report comparison
-- Human-readable memory values in archived report comparisons
-- Downloadable archived report links with truncated path display
-- Archived reports grid with full path display and icon download action
-- Report metadata with application name, version, project URL and generation timestamp
-- Shared project URL exposed through `AppInfo` for reports
-- Current JVM memory metrics for the Javacup process
-- Current JVM thread metrics
-- Current JVM class loading metrics
-- Current JVM garbage collection metrics
-- Current JVM uptime metrics
-- In-memory JVM metric sampling every 2 seconds
-- Recent JVM metric samples table
-- Demo memory application with:
-  - normal mode
-  - burst allocation mode
-  - intentional leak mode
-  - metaspace mode
-- Automated tests for:
-  - external heap parsing
-  - external VM uptime parsing
-  - external heap diagnostics
-  - external heap trend diagnostics
-  - external sample summaries
-  - external sample buffer retention
-
----
-
-## Available pages
-
-| Page | Description |
-| --- | --- |
-| `/` | Dashboard home |
-| `/processes` | Local Java process discovery and filtering |
-| `/processes/{pid}` | Selected process detail and local `jcmd` probes |
-| `/metrics/current` | Current JVM metrics for the Javacup process |
-| `/metrics/samples` | Recent in-memory JVM metric samples |
-| `/metrics/external/{pid}` | External JVM metrics, diagnostics, session samples and JSON report for a selected process |
-
----
-
-## Why Javacup?
-
-Java memory issues are often difficult to understand from raw numbers alone.
-
-Javacup aims to answer questions such as:
-
-- Is my Java application really growing in memory over time?
-- Does heap usage decrease after garbage collection?
-- Is the post-GC heap baseline increasing?
-- Is the JVM spending too much time in garbage collection?
-- Are thread counts or metaspace usage growing unexpectedly?
-- What should I inspect next?
-
-The goal is not to magically find every memory leak.
-The goal is to provide a clear, local and developer-friendly diagnostic assistant.
-
----
-
-## Requirements
-
-For development:
-
-- Java 21
-- Maven 3.8+
-- Git
-
-Recommended:
-
-- VSCodium or VS Code with Java support
-- A modern browser
-
----
-
-## Installation for development
-
-Clone the repository:
-
-```bash
-git clone git@github.com:lucamezzolla/javacup.git
-cd javacup
-```
-
-Switch to the development branch:
-
-```bash
-git checkout development
-```
-
-Build the project:
-
-```bash
-mvn -q -DskipTests package
-```
-
----
-
-## Run locally
-
-From the project root:
-
-```bash
-./scripts/run-dashboard.sh
-```
-
-Then open:
-
-```text
-http://127.0.0.1:8787
-```
-
-The dashboard binds to localhost by default.
-
-```properties
-server.address=127.0.0.1
-server.port=8787
-```
-
-This is intentional: Javacup is designed to be local-first and should not be exposed publicly unless explicitly configured and secured.
-
----
-
-## Demo applications
-
-Javacup includes a small demo application that can be used to test process discovery and future memory monitoring features.
-
-Run a normal Java process:
-
-```bash
-./scripts/run-demo-normal.sh
-```
-
-Run a process with temporary allocation bursts:
-
-```bash
-./scripts/run-demo-burst.sh
-```
-
-Run a process with intentional retained memory growth:
-
-```bash
-./scripts/run-demo-leak.sh
-```
-
-Metaspace growth demo:
-
-```bash
-./scripts/run-demo-metaspace.sh
-```
-
-The leak demo runs with `-Xmx256m` and intentionally retains memory chunks.
-It is only meant for local testing.
-
-After starting one of these scripts, open:
-
-```text
-http://127.0.0.1:8787/processes
-```
-
-You should see the demo JAR as a separate Java process.
-
----
-
-## External monitoring reports
-
-The external metrics page can generate a report for the selected Java process.
-
-The report currently includes:
-
-- monitoring session metadata;
-- selected process PID and status;
-- structured VM uptime;
-- latest parsed heap information;
-- session trend summary;
-- diagnostic warnings;
-- retained recent samples.
-
-From the external metrics page, use:
-
-```text
-Preview report
-```
-
-to open a readable report preview in a dialog.
-
-Use:
-
-```text
-Download JSON report
-```
-
-to download a JSON report generated from the latest values available in the page.
-
----
-
-
-## Testing
-
-Run the automated test suite with:
-
-```bash
-mvn test
-```
-
-Build all modules without running tests with:
-
-```bash
-mvn -DskipTests package
-```
-
-The current test suite covers the first parser and diagnostic components used by the external metrics page.
-
----
-
-## Development workflow
-
-The project currently uses the `development` branch as the active working branch.
-
-Recommended workflow:
-
-```bash
-git status
-mvn -q -DskipTests package
-./scripts/run-dashboard.sh
-git add .
-git commit -m "Describe the change"
-git push
-```
-
-Release tags will be created only when the project reaches meaningful milestones.
-
----
-
-## Current architecture
-
-The project is organized as a Maven multi-module application.
-
-```text
-javacup/
-  javacup-core/
-  javacup-dashboard/
-  javacup-demo-apps/
-  docs/
-  scripts/
-```
-
-Current modules:
-
-| Module | Purpose |
-| --- | --- |
-| `javacup-core` | Shared models and core data structures |
-| `javacup-dashboard` | Spring Boot and Vaadin local dashboard |
-| `javacup-demo-apps` | Small demo application for process discovery and memory behavior experiments |
-
-Planned modules:
-
-```text
-javacup-collector
-javacup-analyzer
-javacup-report
-javacup-storage
-javacup-agent
-```
-
----
-
-## Technical notes
-
-Current metrics are collected from the Javacup JVM itself using standard Java MXBeans:
-
-- `MemoryMXBean`
-- `GarbageCollectorMXBean`
-- `ThreadMXBean`
-- `ClassLoadingMXBean`
-- `RuntimeMXBean`
-
-Local process discovery currently uses:
-
-- `ProcessHandle`
-- `ProcessHandle.Info`
-
-Selected process access can currently be probed with:
-
-- local JDK `jcmd` access probe
-- `jcmd <pid> VM.version`
-- `jcmd <pid> GC.heap_info`
-- `jcmd <pid> VM.uptime`
-
-Reading structured metrics from an external Java process will require a later milestone based on one or more of:
-
-- local JMX
-- Attach API
-- `jcmd` output parsing
-- optional Java Agent
-
----
-
-## Release notes
-
-Project changes are tracked in [`CHANGELOG.md`](CHANGELOG.md).
-
-Current alpha checkpoint:
-
-```text
-v0.1.0-alpha.2
-```
-
-This alpha marks the first local testing milestone. It is not production-ready.
-
----
-
-## Roadmap
-
-### 0.1.x — Local Memory MVP
-
-- Local Vaadin dashboard
-- Java process discovery
-- Selected process detail page
-- Basic JVM memory metrics
-- GC and thread metrics
-- In-memory metric sampling
-- External process access probes
-- First diagnostic warnings, including HEAP_NEAR_MAX
-- HTML/JSON report export
-- Demo applications with controlled leaks
-
-### 0.2.x — External process monitoring
-
-- Safe local attach/JMX investigation
-- Connect to a selected Java process
-- Read memory, GC and thread metrics from the selected process
-- Parse selected `jcmd` outputs into structured metrics
-- Handle permission and compatibility errors clearly
-- Add monitoring session concept
-
-### 0.3.x — Diagnostic engine
-
-- Post-GC baseline analysis
-- GC pressure detection
-- Thread growth detection
-- Metaspace growth detection
-- Severity scoring
-- Better report explanations
-
-### 0.4.x — JFR support
-
-- Start and stop JFR recordings
-- Import `.jfr` files
-- Summarize GC and allocation events
-- Export JFR-based diagnostic reports
-
----
-
-## Security and privacy
-
-Javacup is local-first.
-
-By default:
-
-- the dashboard runs only on `127.0.0.1`;
-- no data is uploaded automatically;
-- no telemetry is sent;
-- diagnostic data stays on the local machine.
-
-Future export and upload features should include clear user consent and report sanitization options.
-
----
-
-## Support the project
-
-If Javacup helps you or you want to support its development, you can make a small donation through PayPal:
-
-[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
-
-Every contribution helps improve documentation, testing, safety checks, UI polish and controlled production-readiness.
-
----
-
-## License
-
-Javacup is licensed under the [Apache License 2.0](LICENSE).
-
----
-
-## Author
-
-Created by [Luca Mezzolla](https://github.com/lucamezzolla).
-
-
-## Current status
-
-Javacup `0.3.0` is complete as a local JVM Memory Diagnostic MVP.
-
-The project is considered concluded for its first local MVP scope: it can be used locally to discover Java processes, inspect external JVM memory information, collect samples, generate readable reports, archive JSON reports and compare archived reports.
-
-The project remains open to future post-MVP improvements, but new work should be treated as enhancement work rather than MVP closure work.
+The project remains open to future improvements, but future work should be treated as **post-MVP enhancement work**, not MVP closure work.
 
 Current released version:
 
@@ -527,7 +20,23 @@ Current release tag:
 
 - `v0.3.0`
 
-### MVP feature set
+## What Javacup does
+
+Javacup provides a local workflow for inspecting JVM memory behavior during development, testing and support sessions.
+
+Core workflow:
+
+1. Start the local dashboard.
+2. Discover local Java processes.
+3. Select a target JVM.
+4. Read JVM information through local JDK diagnostic commands.
+5. Collect external metric samples.
+6. Review diagnostics and session health.
+7. Generate a readable report preview.
+8. Download or archive a JSON report.
+9. Search, preview and compare archived reports.
+
+## Current features
 
 Javacup `0.3.0` includes:
 
@@ -536,13 +45,30 @@ Javacup `0.3.0` includes:
 - External JVM probing through local JDK diagnostic commands.
 - Structured heap information.
 - Structured VM uptime information.
-- Probe status and probe failure diagnostics.
-- Heap, Metaspace and sample-quality diagnostics.
-- External Metrics page with Session health summary.
-- Session health verdict, probe state, sample quality, main issue and recommended action.
-- Sample collection for external JVM monitoring sessions.
-- Heap and Metaspace trend summaries.
-- Lightweight heap and Metaspace trend charts.
+- Probe status and probe failure classification.
+- Diagnostics for process-not-found, attach failure, unavailable `jcmd`, timeout and generic probe failures.
+- Uptime probe diagnostics.
+- Heap pressure diagnostics.
+- Heap growth diagnostics.
+- Metaspace growth diagnostics.
+- Sample-quality diagnostics:
+  - `INSUFFICIENT_SAMPLES_FOR_TREND`
+  - `PARTIAL_SAMPLE_DATA`
+- Unsupported heap parser format diagnostic.
+- External Metrics page with Session health summary:
+  - verdict
+  - probe state
+  - sample quality
+  - main issue
+  - recommended action
+- Visual Session health verdict.
+- External metric sample collection.
+- Heap trend summary.
+- Metaspace trend summary.
+- Lightweight heap trend chart.
+- Lightweight Metaspace trend chart.
+- Raw `GC.heap_info` output view.
+- Raw `VM.uptime` output view.
 - Readable report preview with:
   - Report verdict
   - Probe summary
@@ -551,19 +77,118 @@ Javacup `0.3.0` includes:
   - Recommended next actions
 - JSON report download.
 - Local JSON report archive.
-- Archived report search and preview.
+- Archived report search.
+- Archived report preview.
 - Archived report comparison.
+- Human-readable comparison notes for:
+  - structured probe status
+  - unsupported heap parser formats
+  - insufficient sample data
+  - partial sample data
 - Light/dark theme toggle.
 - Internal quick-use guide.
 - MVP verification script: `scripts/verify-mvp.sh`.
+- Bundled demo JVM launcher, when available: `scripts/run-demo.sh`.
 
-### Release position
+## Available pages
+
+- **Dashboard**: Project entry page with quick access to the main local workflow.
+- **Processes**: Lists local Java processes that Javacup can inspect.
+- **External Metrics**: Shows external JVM metrics for a selected process, including probe status, session health, heap/metaspace summaries, samples, diagnostics and report actions.
+- **Current JVM Metrics**: Shows metrics for the Javacup JVM itself.
+- **Metric Samples**: Shows local metric samples collected by the application.
+- **Archived reports**: Lists locally archived JSON reports, supports search, preview and report comparison.
+- **Local Lab**: Optional local workflow helper page for running the dashboard and bundled demo JVMs.
+- **Guide**: Internal quick-use guide for the local diagnostic workflow and diagnostic interpretation.
+- **Donate**: Support page for the project.
+
+## Requirements
+
+- Linux, macOS or Windows with a supported Java environment.
+- JDK 21 or newer.
+- Maven.
+- A full JDK is recommended because Javacup relies on local diagnostic commands such as `jcmd`.
+
+`jcmd` must be available from the JDK used to run Javacup.
+
+## Build and test
+
+From the project root:
+
+```bash
+mvn -q test
+mvn -q -DskipTests package
+```
+
+## Run the dashboard
+
+```bash
+./scripts/run-dashboard.sh
+```
+
+Then open the local dashboard in the browser using the URL printed by Spring Boot.
+
+## Optional demo JVMs
+
+If the demo launcher is available:
+
+```bash
+./scripts/run-demo.sh normal
+./scripts/run-demo.sh heap
+./scripts/run-demo.sh metaspace
+```
+
+Use these demo JVMs to test process discovery, external metrics, sample collection, diagnostics and report generation.
+
+## MVP verification
+
+Before publishing or checking a release, run:
+
+```bash
+./scripts/verify-mvp.sh
+```
+
+Expected final line:
+
+```text
+Javacup MVP verification completed successfully.
+```
+
+## Reports
+
+Javacup reports are local JSON files.
+
+The report workflow includes:
+
+- readable preview
+- JSON download
+- local archive
+- archived search
+- archived preview
+- archived comparison
+
+Javacup is local-first: reports stay on the machine unless the user explicitly shares them.
+
+## Release status
 
 `v0.3.0` is the first official local MVP release.
 
-After this release, Javacup should only receive blocking fixes or post-MVP improvements such as packaging, richer charts, more diagnostics, improved exports, JFR-oriented analysis, or optional longer-term local persistence.
+This release closes the initial MVP scope. Future releases may add packaging, richer charts, additional diagnostics, improved exports, JFR-oriented analysis, or longer-term local persistence.
 
-### Repository note
+Those items are intentionally considered **post-MVP improvements**.
 
-The old roadmap and MVP checklist documents were removed because the MVP scope is now closed. The README is the main project entry point, while GitHub Releases should be used for release notes.
+## Non-goals for v0.3.0
 
+The following items are not part of the `v0.3.0` MVP:
+
+- Installer/package distribution.
+- Remote JVM monitoring.
+- Production agent mode.
+- JFR recording/import workflow.
+- Long-term database-backed persistence.
+- Advanced historical dashboards.
+- Full leak detector automation.
+
+## License
+
+See [LICENSE](LICENSE).

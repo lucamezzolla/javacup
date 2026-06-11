@@ -18,6 +18,10 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Changed
 
+- Removed obsolete roadmap/checklist language from the project documentation.
+
+- README rewritten to describe Javacup `0.3.0` as the completed local JVM Memory Diagnostic MVP.
+
 - README now states that Javacup `0.3.0` is complete as a local JVM Memory Diagnostic MVP while remaining open to post-MVP improvements.
 
 - Removed obsolete roadmap and MVP checklist documents now that the local MVP scope is closed.
