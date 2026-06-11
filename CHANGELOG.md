@@ -8,7 +8,9 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
-## [0.2.0-alpha.3-SNAPSHOT]
+## [0.2.0-alpha.3] - 2026-06-11
+
+- `v0.2.0-alpha.3` focuses on readable report previews, high-level verdicts and practical next actions.
 
 ### Added
 
@@ -24,12 +26,6 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 - Report readable preview includes a diagnostic summary with severity counts and diagnostic codes.
 
-### Planned
-
-- Improve report preview/export readability.
-- Add more actionable archived report comparison interpretations.
-- Continue sample-based diagnostic improvements.
-- Keep the internal Guide aligned with every new diagnostic code.
 
 ## [0.2.0-alpha.2] - 2026-06-02
 

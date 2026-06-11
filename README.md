@@ -515,69 +515,54 @@ Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 
 
 
+
 ## Current status
 
 The `0.1.x` alpha line is considered the first local MVP line and is closed by `v0.1.0-alpha.4`.
 
-The latest stable 0.2.x checkpoint is `v0.2.0-alpha.2`.
+The latest stable 0.2.x checkpoint is `v0.2.0-alpha.3`.
 
-Latest released version:
+Current released version:
 
-- `0.2.0-alpha.2`
+- `0.2.0-alpha.3`
 
-Current development version:
+Next development version:
 
-- `0.2.0-alpha.3-SNAPSHOT`
+- `0.2.0-alpha.4-SNAPSHOT`
 
 ### `v0.2.0-alpha.1`
 
 First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
-Highlights:
-
-- Structured `jcmd` probe status and failure classification.
-- `probeStatus` and `probeFailureKind` persisted in JSON reports.
-- Diagnostics for probe failures, including `PROBE_*` and `UPTIME_PROBE_*`.
-- Archived report comparison support for structured probe status.
-- Broader `GC.heap_info` parsing for generation-based heap outputs.
-- Parser regression coverage for real OpenJDK G1 heap info output.
-- Dedicated diagnostic for successful probes whose heap output format is not supported yet.
-
 ### `v0.2.0-alpha.2`
 
-Second 0.2.x alpha checkpoint focused on sample-quality diagnostics, guide alignment and archived report comparison explanations.
+Second 0.2.x alpha checkpoint focused on sample-quality diagnostics, Guide alignment and archived report comparison explanations.
+
+### `v0.2.0-alpha.3`
+
+Third 0.2.x alpha checkpoint focused on making report previews more useful and readable.
 
 Highlights:
 
-- Internal Guide page with quick navigation, suggested workflow, diagnostic quick reference, external learning links and About/version information.
-- Guide internal navigation links stay on the Guide page.
-- Light/dark theme toggle saved in browser local storage.
-- Drawer menu spacing refined with top padding.
-- `INSUFFICIENT_SAMPLES_FOR_TREND` sample-quality diagnostic.
-- `PARTIAL_SAMPLE_DATA` sample-quality diagnostic.
-- Guide diagnostic reference includes insufficient and partial sample data diagnostics.
-- External Metrics diagnostics description reflects probe, sample quality and growth diagnostics.
-- Archived report comparison explains insufficient and partial sample diagnostics.
-- Synthetic report fixtures validated manually for sample-quality comparison notes.
+- Readable report preview includes `Report verdict`.
+- Readable report preview includes `Probe summary`.
+- Readable report preview includes `Trend interpretation`.
+- Readable report preview includes `Diagnostic summary`.
+- Readable report preview includes `Recommended next actions`.
+- Guide documents report preview sections and report verdict levels.
+- Automated tests cover readable report preview high-level sections and recommended actions.
 
 ### Release position
 
-`v0.2.0-alpha.2` has been tagged and pushed.
+`v0.2.0-alpha.3` is the current release checkpoint candidate.
 
-Development has resumed on `0.2.0-alpha.3-SNAPSHOT`.
+After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
 
 ### Suggested next roadmap items
 
-- Continue `0.2.0-alpha.3-SNAPSHOT` development.
-- Improve report preview/export readability.
+- Stabilize the project as a practical local MVP.
+- Improve report preview/export UI polish only where needed.
 - Add more actionable interpretations for archived report comparison.
-- Continue improving sample-based diagnostics.
+- Continue sample-based diagnostic improvements.
 - Keep the internal Guide aligned with every new diagnostic code.
-- Report readable preview includes a diagnostic summary with severity counts and diagnostic codes.
-- Report readable preview includes a trend interpretation section for sample quality, heap and Metaspace.
-- Report readable preview includes recommended next actions based on diagnostic codes.
-- Report readable preview includes a probe summary with session, heap probe and uptime probe status.
-- Guide explains report preview sections, including probe summary, trend interpretation, diagnostic summary and recommended next actions.
-- Report readable preview includes a high-level verdict based on diagnostic severity.
-- Guide explains report verdict levels used by the readable report preview.
-- Automated tests cover the readable report preview high-level sections and recommended actions.
+
