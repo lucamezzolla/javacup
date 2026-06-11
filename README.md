@@ -558,4 +558,4 @@ After `v0.3.0`, avoid new features until any blocking bugs are fixed. Future wor
 - JFR-oriented analysis.
 - More diagnostic rules.
 - Optional local persistence beyond JSON files.
-
+- Release notes for `v0.3.0` are available in `docs/releases/v0.3.0.md`.

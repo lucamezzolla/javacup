@@ -64,3 +64,10 @@ reports/generated/
 javacup-dashboard/src/main/frontend/generated/
 **/src/main/frontend/generated/
 **/frontend/generated/
+# Maven / Java build outputs
+# Javacup local runtime files
+.javacup/
+# Temporary/editor/system files
+[Help
+*.bak
+# IDE files

@@ -19,6 +19,8 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Changed
 
+- Release notes for `v0.3.0` are available in `docs/releases/v0.3.0.md`.
+
 - Project version aligned to `0.3.0`.
 - README status aligned with the local MVP closure.
 - MVP verification now checks version consistency, core External Metrics workflow, readable report preview, archive/compare workflow, tests and package build.
