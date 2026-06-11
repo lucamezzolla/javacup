@@ -572,3 +572,7 @@ After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
 - Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
 - `scripts/local-lab.sh` prints the recommended local workflow commands.
 - External Metrics includes a Session health summary for verdict, probe state, sample quality, main issue and recommended action.
+- External Metrics visually highlights the Session health verdict and has a regression test for the health summary section.
+- External Metrics includes a direct action to open Archived reports after previewing or archiving a report.
+- `scripts/verify-mvp.sh` runs the main local MVP verification workflow.
+- MVP stabilization focus: keep the core flow green from process discovery to report preview, archive and comparison.

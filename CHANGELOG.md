@@ -12,6 +12,10 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- External Metrics includes a direct action to open Archived reports after previewing or archiving a report.
+- `scripts/verify-mvp.sh` runs the main local MVP verification workflow.
+- MVP workflow tests protect essential scripts and External Metrics actions.
+
 - External Metrics includes a Session health summary for verdict, probe state, sample quality, main issue and recommended action.
 
 - Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
@@ -86,6 +90,8 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 ## [0.1.0-alpha.4] - 2026-06-02
 
 ### Changed
+
+- External Metrics visually highlights the Session health verdict and has a regression test for the health summary section.
 
 - Guide explains report verdict levels used by the readable report preview.
 

@@ -183,6 +183,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         Button stopButton = new Button("Stop session", event -> stopSession());
         Button previewReportButton = new Button("Preview report", event -> previewReport());
         Button archiveReportButton = new Button("Archive JSON report", event -> archiveReport());
+        Button openArchivedReportsButton = new Button("Open archived reports", event -> getUI().ifPresent(ui -> ui.navigate("reports/archived")));
 
         configureDiagnosticsGrid();
         configureSamplesGrid();
@@ -213,7 +214,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         add(
                 title,
                 new Paragraph("This page reads external JVM information from a selected Java process using local JDK diagnostic commands."),
-                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, archiveReportButton, downloadReportLink),
+                new HorizontalLayout(backButton, refreshButton, stopButton, previewReportButton, archiveReportButton, openArchivedReportsButton, downloadReportLink),
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
                 section("Probe status", processAvailability, probeAvailability, probeHint),
@@ -632,10 +633,46 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
         DiagnosticWarning mainDiagnostic = mainDiagnostic(diagnostics);
 
         sessionHealthVerdict.setText("Session health: " + verdict);
+        styleSessionHealthVerdict(verdict);
         sessionHealthProbe.setText("Probe: " + probeSummary);
         sessionHealthSamples.setText("Samples: " + sampleSummary);
         sessionHealthMainIssue.setText("Main issue: " + (mainDiagnostic == null ? "none" : mainDiagnostic.code()));
         sessionHealthAction.setText("Recommended action: " + recommendedSessionAction(mainDiagnostic));
+    }
+
+    private void styleSessionHealthVerdict(String verdict) {
+        sessionHealthVerdict.getStyle()
+                .set("display", "inline-flex")
+                .set("width", "fit-content")
+                .set("padding", "var(--lumo-space-xs) var(--lumo-space-s)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("font-weight", "600")
+                .set("border", "1px solid var(--lumo-contrast-20pct)");
+
+        if ("Needs attention".equals(verdict)) {
+            sessionHealthVerdict.getStyle()
+                    .set("background", "var(--lumo-error-color-10pct)")
+                    .set("color", "var(--lumo-error-text-color)");
+            return;
+        }
+
+        if ("Review recommended".equals(verdict)) {
+            sessionHealthVerdict.getStyle()
+                    .set("background", "var(--lumo-warning-color-10pct)")
+                    .set("color", "var(--lumo-warning-text-color)");
+            return;
+        }
+
+        if ("Informational".equals(verdict)) {
+            sessionHealthVerdict.getStyle()
+                    .set("background", "var(--lumo-primary-color-10pct)")
+                    .set("color", "var(--lumo-primary-text-color)");
+            return;
+        }
+
+        sessionHealthVerdict.getStyle()
+                .set("background", "var(--lumo-success-color-10pct)")
+                .set("color", "var(--lumo-success-text-color)");
     }
 
     private String sessionHealthVerdict(List<DiagnosticWarning> diagnostics) {
