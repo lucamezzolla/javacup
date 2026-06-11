@@ -1,5 +1,12 @@
 # Javacup
 
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/lucamezzolla82)
+
+> If you find Helix useful or want to support its development, you can make a small donation through PayPal.  
+> Your support helps improve documentation, testing, safety checks, UI polish and controlled production-readiness.
+
+---
+
 **Javacup** is a local-first JVM memory diagnostic dashboard for Java developers.
 
 Javacup helps inspect local Java processes, collect external JVM memory samples, explain diagnostic signals, generate readable reports, archive JSON reports and compare archived reports locally.
