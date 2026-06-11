@@ -12,6 +12,8 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- External Metrics includes a Session health summary for verdict, probe state, sample quality, main issue and recommended action.
+
 - Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
 - `scripts/local-lab.sh` prints the recommended local workflow commands.
 

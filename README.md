@@ -571,3 +571,4 @@ After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
 - `scripts/run-demo.sh` starts the demo JVM in `normal`, `heap` or `metaspace` mode.
 - Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
 - `scripts/local-lab.sh` prints the recommended local workflow commands.
+- External Metrics includes a Session health summary for verdict, probe state, sample quality, main issue and recommended action.

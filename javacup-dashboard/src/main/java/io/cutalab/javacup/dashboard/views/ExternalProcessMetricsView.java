@@ -88,6 +88,11 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     private final Span processAvailability = new Span("Process availability: unknown");
     private final Span probeAvailability = new Span("Probe availability: unknown");
     private final Span probeHint = new Span("Probe hint: waiting for first refresh");
+    private final Span sessionHealthVerdict = new Span("Session health: waiting for first refresh");
+    private final Span sessionHealthProbe = new Span("Probe: waiting for first refresh");
+    private final Span sessionHealthSamples = new Span("Samples: waiting for first refresh");
+    private final Span sessionHealthMainIssue = new Span("Main issue: waiting for first refresh");
+    private final Span sessionHealthAction = new Span("Recommended action: waiting for first refresh");
 
     private final Span autoRefreshStatus = new Span("Auto-refresh: waiting for page attach");
     private final Span lastRefresh = new Span("Last refresh: never");
@@ -212,6 +217,13 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
                 section("Selected process", pid, application, type, autoRefreshStatus, lastRefresh),
                 section("Monitoring session", sessionId, sessionStatus, sessionStartedAt, sessionLastUpdatedAt),
                 section("Probe status", processAvailability, probeAvailability, probeHint),
+                section("Session health",
+                        new Paragraph("Operational summary for the selected monitoring session."),
+                        sessionHealthVerdict,
+                        sessionHealthProbe,
+                        sessionHealthSamples,
+                        sessionHealthMainIssue,
+                        sessionHealthAction),
                 section("Structured VM uptime", vmUptime, vmUptimeSeconds),
                 section("Structured heap summary", heapType, heapUsed, heapTotal, heapReserved),
                 section("Structured metaspace summary", metaspaceUsed, metaspaceCommitted, metaspaceReserved),
@@ -366,6 +378,7 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
 
         updateStructuredHeapInfo(latestHeapInfo);
         updateProbeStatus();
+        updateSessionHealthSummary();
 
         if (latestHeapInfo.hasStructuredValues()) {
             sampleService.addSample(currentSession, latestHeapInfo);
@@ -608,6 +621,136 @@ public class ExternalProcessMetricsView extends VerticalLayout implements HasUrl
     }
 
 
+
+
+    private void updateSessionHealthSummary() {
+        List<DiagnosticWarning> diagnostics = latestDiagnostics == null ? List.of() : latestDiagnostics;
+
+        String verdict = sessionHealthVerdict(diagnostics);
+        String probeSummary = sessionHealthProbeSummary();
+        String sampleSummary = sessionHealthSampleSummary(diagnostics);
+        DiagnosticWarning mainDiagnostic = mainDiagnostic(diagnostics);
+
+        sessionHealthVerdict.setText("Session health: " + verdict);
+        sessionHealthProbe.setText("Probe: " + probeSummary);
+        sessionHealthSamples.setText("Samples: " + sampleSummary);
+        sessionHealthMainIssue.setText("Main issue: " + (mainDiagnostic == null ? "none" : mainDiagnostic.code()));
+        sessionHealthAction.setText("Recommended action: " + recommendedSessionAction(mainDiagnostic));
+    }
+
+    private String sessionHealthVerdict(List<DiagnosticWarning> diagnostics) {
+        if (diagnostics.isEmpty()) {
+            return "OK";
+        }
+
+        if (hasSeverity(diagnostics, "CRITICAL")) {
+            return "Needs attention";
+        }
+
+        if (hasSeverity(diagnostics, "WARNING")) {
+            return "Review recommended";
+        }
+
+        return "Informational";
+    }
+
+    private boolean hasSeverity(List<DiagnosticWarning> diagnostics, String severityName) {
+        return diagnostics.stream()
+                .filter(diagnostic -> diagnostic.severity() != null)
+                .anyMatch(diagnostic -> severityName.equals(diagnostic.severity().name()));
+    }
+
+    private String sessionHealthProbeSummary() {
+        boolean heapOk = latestHeapInfo != null && isProbeOk(latestHeapInfo.probeStatus(), latestHeapInfo.probeFailureKind());
+        boolean uptimeOk = latestVmUptime != null && isProbeOk(latestVmUptime.probeStatus(), latestVmUptime.probeFailureKind());
+
+        if (heapOk && uptimeOk) {
+            return "OK";
+        }
+
+        if (latestHeapInfo == null && latestVmUptime == null) {
+            return "waiting for probe data";
+        }
+
+        return "issue detected";
+    }
+
+    private boolean isProbeOk(String probeStatus, String failureKind) {
+        String status = probeStatus == null ? "" : probeStatus;
+        String failure = failureKind == null ? "" : failureKind;
+
+        return "OK".equals(status) && ("NONE".equals(failure) || failure.isBlank());
+    }
+
+    private String sessionHealthSampleSummary(List<DiagnosticWarning> diagnostics) {
+        if (hasDiagnosticCode(diagnostics, "INSUFFICIENT_SAMPLES_FOR_TREND")) {
+            return "insufficient for trend diagnostics";
+        }
+
+        if (hasDiagnosticCode(diagnostics, "PARTIAL_SAMPLE_DATA")) {
+            return "partial sample data";
+        }
+
+        if (latestSampleSummary == null) {
+            return "unavailable";
+        }
+
+        return latestSampleSummary.sampleCount() + " collected";
+    }
+
+    private boolean hasDiagnosticCode(List<DiagnosticWarning> diagnostics, String code) {
+        return diagnostics.stream()
+                .anyMatch(diagnostic -> code.equals(diagnostic.code()));
+    }
+
+    private DiagnosticWarning mainDiagnostic(List<DiagnosticWarning> diagnostics) {
+        return diagnostics.stream()
+                .filter(diagnostic -> diagnostic.severity() != null)
+                .filter(diagnostic -> "CRITICAL".equals(diagnostic.severity().name()))
+                .findFirst()
+                .or(() -> diagnostics.stream()
+                        .filter(diagnostic -> diagnostic.severity() != null)
+                        .filter(diagnostic -> "WARNING".equals(diagnostic.severity().name()))
+                        .findFirst())
+                .or(() -> diagnostics.stream().findFirst())
+                .orElse(null);
+    }
+
+    private String recommendedSessionAction(DiagnosticWarning diagnostic) {
+        if (diagnostic == null) {
+            return "continue observing or generate a report when needed";
+        }
+
+        String code = diagnostic.code();
+
+        if ("INSUFFICIENT_SAMPLES_FOR_TREND".equals(code)) {
+            return "collect at least four samples before interpreting trends";
+        }
+
+        if ("PARTIAL_SAMPLE_DATA".equals(code)) {
+            return "check probe availability and raw output";
+        }
+
+        if (code != null && (code.startsWith("PROBE_") || code.startsWith("UPTIME_PROBE_"))) {
+            return "verify process availability, permissions and local jcmd";
+        }
+
+        if ("HEAP_SESSION_GROWING".equals(code) || "HEAP_NEAR_MAX".equals(code)) {
+            return "observe after workload stabilization and inspect retained memory if growth continues";
+        }
+
+        if ("METASPACE_SESSION_GROWING".equals(code)) {
+            return "inspect class loading, generated classes and class loaders";
+        }
+
+        if ("HEAP_PARSER_UNSUPPORTED_FORMAT".equals(code)) {
+            return "keep raw GC.heap_info output for parser support";
+        }
+
+        return diagnostic.recommendation() == null || diagnostic.recommendation().isBlank()
+                ? "review diagnostic details"
+                : diagnostic.recommendation();
+    }
 
     private void updateProbeStatus() {
         if (selectedPid == null) {
