@@ -516,19 +516,20 @@ Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 
 
 
+
 ## Current status
 
 The `0.1.x` alpha line is considered the first local MVP line and is closed by `v0.1.0-alpha.4`.
 
-The latest stable 0.2.x checkpoint is `v0.2.0-alpha.3`.
+The latest stable 0.2.x checkpoint is `v0.2.0-alpha.4`.
 
-Latest released version:
+Current released version:
 
-- `0.2.0-alpha.3`
+- `0.2.0-alpha.4`
 
-Current development version:
+Next development version:
 
-- `0.2.0-alpha.4-SNAPSHOT`
+- `0.2.0-alpha.5-SNAPSHOT`
 
 ### `v0.2.0-alpha.1`
 
@@ -540,39 +541,31 @@ Second 0.2.x alpha checkpoint focused on sample-quality diagnostics, Guide align
 
 ### `v0.2.0-alpha.3`
 
-Third 0.2.x alpha checkpoint focused on making report previews more useful and readable.
+Third 0.2.x alpha checkpoint focused on readable report previews, high-level verdicts and practical next actions.
+
+### `v0.2.0-alpha.4`
+
+Fourth 0.2.x alpha checkpoint focused on stabilizing the local MVP workflow.
 
 Highlights:
 
-- Readable report preview includes `Report verdict`.
-- Readable report preview includes `Probe summary`.
-- Readable report preview includes `Trend interpretation`.
-- Readable report preview includes `Diagnostic summary`.
-- Readable report preview includes `Recommended next actions`.
-- Guide documents report preview sections and report verdict levels.
-- Automated tests cover readable report preview high-level sections and recommended actions.
+- External Metrics includes a Session health summary with verdict, probe state, sample quality, main issue and recommended action.
+- Session health verdict is visually highlighted for quick reading.
+- External Metrics includes a direct action to open Archived reports after report preview/archive.
+- MVP workflow verification script: `scripts/verify-mvp.sh`.
+- MVP workflow tests protect essential scripts and External Metrics actions.
+- Local dashboard, Java process discovery, external JVM probes, sample collection, diagnostics, report preview, JSON archive and report comparison are all part of the stabilized local workflow.
 
 ### Release position
 
-`v0.2.0-alpha.3` is the current release checkpoint candidate.
+`v0.2.0-alpha.4` is the current MVP stabilization checkpoint.
 
-After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
+After tagging, development can resume on `0.2.0-alpha.5-SNAPSHOT` only if needed.
 
-### Suggested next roadmap items
+### Suggested finalization items after `v0.2.0-alpha.4`
 
-- Stabilize the project as a practical local MVP.
-- Improve report preview/export UI polish only where needed.
-- Add more actionable interpretations for archived report comparison.
-- Continue sample-based diagnostic improvements.
-- Keep the internal Guide aligned with every new diagnostic code.
-- Dashboard shows the current development version and roadmap focus.
-- Guide includes a Local MVP finish line section for the current stabilization phase.
-- Dashboard quick actions provide direct access to Guide and Archived reports.
-- `scripts/run-demo.sh` starts the demo JVM in `normal`, `heap` or `metaspace` mode.
-- Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
-- `scripts/local-lab.sh` prints the recommended local workflow commands.
-- External Metrics includes a Session health summary for verdict, probe state, sample quality, main issue and recommended action.
-- External Metrics visually highlights the Session health verdict and has a regression test for the health summary section.
-- External Metrics includes a direct action to open Archived reports after previewing or archiving a report.
-- `scripts/verify-mvp.sh` runs the main local MVP verification workflow.
-- MVP stabilization focus: keep the core flow green from process discovery to report preview, archive and comparison.
+- Avoid large new features before the MVP closure tag.
+- Fix only blocking bugs or unclear workflow issues.
+- Run `scripts/verify-mvp.sh` before the final MVP tag.
+- Prepare a final MVP release candidate when the local workflow feels stable end to end.
+
