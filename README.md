@@ -579,3 +579,4 @@ Development has resumed on `0.2.0-alpha.3-SNAPSHOT`.
 - Report readable preview includes a probe summary with session, heap probe and uptime probe status.
 - Guide explains report preview sections, including probe summary, trend interpretation, diagnostic summary and recommended next actions.
 - Report readable preview includes a high-level verdict based on diagnostic severity.
+- Guide explains report verdict levels used by the readable report preview.

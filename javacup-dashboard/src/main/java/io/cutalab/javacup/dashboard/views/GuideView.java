@@ -33,6 +33,7 @@ public class GuideView extends VerticalLayout {
                 internalLinkItem("Common problems", "common-problems"),
                 internalLinkItem("Reports and comparison", "reports"),
                 internalLinkItem("Report preview", "report-preview"),
+                internalLinkItem("Report verdict levels", "report-verdict-levels"),
                 internalLinkItem("Learn more", "learn-more"),
                 internalLinkItem("Privacy", "privacy"),
                 internalLinkItem("About Javacup", "about")
@@ -105,11 +106,20 @@ public class GuideView extends VerticalLayout {
                 "The readable report preview is a compact human-readable view of the JSON report. It is meant to help you understand the report before downloading, sharing or comparing it."
         );
         UnorderedList reportPreview = new UnorderedList(
+                new ListItem("Report verdict gives an immediate high-level reading based on diagnostic severity."),
                 new ListItem("Probe summary shows session status, heap probe status and uptime probe status."),
                 new ListItem("Trend interpretation gives a quick reading of sample quality, heap growth and Metaspace growth."),
                 new ListItem("Diagnostic summary counts diagnostics by severity and lists diagnostic codes."),
                 new ListItem("Recommended next actions turns diagnostic codes into practical follow-up suggestions."),
                 new ListItem("The raw JSON report remains the source of truth for archived comparison and deeper debugging.")
+        );
+
+        H2 reportVerdictTitle = sectionTitle("Report verdict levels", "report-verdict-levels");
+        UnorderedList reportVerdictLevels = new UnorderedList(
+                new ListItem("No diagnostics reported: the report did not contain diagnostic entries."),
+                new ListItem("Informational: diagnostics exist, but no warnings or critical issues were reported."),
+                new ListItem("Review recommended: at least one warning diagnostic is present."),
+                new ListItem("Needs immediate attention: at least one critical diagnostic is present.")
         );
 
         H2 learnMoreTitle = sectionTitle("Learn more", "learn-more");
@@ -158,6 +168,8 @@ public class GuideView extends VerticalLayout {
                 reportPreviewTitle,
                 reportPreviewIntro,
                 reportPreview,
+                reportVerdictTitle,
+                reportVerdictLevels,
                 learnMoreTitle,
                 learnMore,
                 privacyTitle,

@@ -67,6 +67,8 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 ### Changed
 
+- Guide explains report verdict levels used by the readable report preview.
+
 - Guide explains report preview sections, including probe summary, trend interpretation, diagnostic summary and recommended next actions.
 
 - External metrics diagnostics description now reflects probe, sample quality and growth diagnostics.
