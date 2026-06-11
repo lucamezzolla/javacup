@@ -12,6 +12,8 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Automated tests cover the readable report preview high-level sections and recommended actions.
+
 - Report readable preview includes a high-level verdict based on diagnostic severity.
 
 - Report readable preview includes a probe summary with session, heap probe and uptime probe status.

@@ -580,3 +580,4 @@ Development has resumed on `0.2.0-alpha.3-SNAPSHOT`.
 - Guide explains report preview sections, including probe summary, trend interpretation, diagnostic summary and recommended next actions.
 - Report readable preview includes a high-level verdict based on diagnostic severity.
 - Guide explains report verdict levels used by the readable report preview.
+- Automated tests cover the readable report preview high-level sections and recommended actions.
