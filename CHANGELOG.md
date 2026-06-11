@@ -15,11 +15,13 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 ### Added
 
 - Final MVP verification workflow through `scripts/verify-mvp.sh`.
-- MVP checklist in `docs/mvp-checklist.md`.
 
 ### Changed
 
-- Release notes for `v0.3.0` are available in `docs/releases/v0.3.0.md`.
+- README now states that Javacup `0.3.0` is complete as a local JVM Memory Diagnostic MVP while remaining open to post-MVP improvements.
+
+- Removed obsolete roadmap and MVP checklist documents now that the local MVP scope is closed.
+
 
 - Project version aligned to `0.3.0`.
 - README status aligned with the local MVP closure.
@@ -90,7 +92,6 @@ First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
 
 - Start the next roadmap phase after the 0.1.x local MVP line.
 - Improve structured JVM diagnostics and make runtime evidence less dependent on raw `jcmd` output.
-
 
 
 ## [0.1.x alpha line]

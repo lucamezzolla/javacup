@@ -24,9 +24,6 @@ Latest 0.2.x checkpoint: `v0.2.0-alpha.1`.
 Latest released version: `0.2.0-alpha.2`.
 
 
-
-
-
 ## 0.1.x alpha line closure
 
 The `0.1.x` alpha line is considered Javacup's first local MVP line and is closed by `v0.1.0-alpha.4`.
@@ -514,13 +511,13 @@ Javacup is licensed under the [Apache License 2.0](LICENSE).
 Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 
 
-
-
-
-
 ## Current status
 
-Javacup `0.3.0` is the local JVM Memory Diagnostic MVP checkpoint.
+Javacup `0.3.0` is complete as a local JVM Memory Diagnostic MVP.
+
+The project is considered concluded for its first local MVP scope: it can be used locally to discover Java processes, inspect external JVM memory information, collect samples, generate readable reports, archive JSON reports and compare archived reports.
+
+The project remains open to future post-MVP improvements, but new work should be treated as enhancement work rather than MVP closure work.
 
 Current released version:
 
@@ -530,32 +527,43 @@ Current release tag:
 
 - `v0.3.0`
 
-### What is included in the MVP
+### MVP feature set
+
+Javacup `0.3.0` includes:
 
 - Local Vaadin dashboard.
 - Local Java process discovery.
 - External JVM probing through local JDK diagnostic commands.
-- Structured heap and VM uptime information.
+- Structured heap information.
+- Structured VM uptime information.
 - Probe status and probe failure diagnostics.
 - Heap, Metaspace and sample-quality diagnostics.
 - External Metrics page with Session health summary.
-- Report preview with verdict, probe summary, trend interpretation, diagnostic summary and recommended next actions.
-- JSON report download/archive.
-- Local archived report search, preview and comparison.
+- Session health verdict, probe state, sample quality, main issue and recommended action.
+- Sample collection for external JVM monitoring sessions.
+- Heap and Metaspace trend summaries.
+- Lightweight heap and Metaspace trend charts.
+- Readable report preview with:
+  - Report verdict
+  - Probe summary
+  - Trend interpretation
+  - Diagnostic summary
+  - Recommended next actions
+- JSON report download.
+- Local JSON report archive.
+- Archived report search and preview.
+- Archived report comparison.
+- Light/dark theme toggle.
+- Internal quick-use guide.
 - MVP verification script: `scripts/verify-mvp.sh`.
 
-### MVP closure
+### Release position
 
-The MVP is considered closed when `scripts/verify-mvp.sh` passes locally and GitHub Actions are green for `v0.3.0`.
+`v0.3.0` is the first official local MVP release.
 
-After `v0.3.0`, avoid new features until any blocking bugs are fixed. Future work should be tracked as post-MVP improvements.
+After this release, Javacup should only receive blocking fixes or post-MVP improvements such as packaging, richer charts, more diagnostics, improved exports, JFR-oriented analysis, or optional longer-term local persistence.
 
-### Suggested post-MVP improvements
+### Repository note
 
-- Installer/package distribution.
-- More advanced charts and timelines.
-- Better report export formats.
-- JFR-oriented analysis.
-- More diagnostic rules.
-- Optional local persistence beyond JSON files.
-- Release notes for `v0.3.0` are available in `docs/releases/v0.3.0.md`.
+The old roadmap and MVP checklist documents were removed because the MVP scope is now closed. The README is the main project entry point, while GitHub Releases should be used for release notes.
+
