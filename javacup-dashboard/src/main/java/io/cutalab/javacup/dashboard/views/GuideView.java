@@ -36,7 +36,8 @@ public class GuideView extends VerticalLayout {
                 internalLinkItem("Report verdict levels", "report-verdict-levels"),
                 internalLinkItem("Learn more", "learn-more"),
                 internalLinkItem("Privacy", "privacy"),
-                internalLinkItem("About Javacup", "about")
+                internalLinkItem("About Javacup", "about"),
+                internalLinkItem("Local MVP finish line", "local-mvp-finish-line")
         );
 
         H2 firstStepsTitle = sectionTitle("First steps", "first-steps");
@@ -136,6 +137,18 @@ public class GuideView extends VerticalLayout {
                 "Javacup is designed for local use. It observes local JVMs and writes local reports. Review report contents before sharing them outside your machine."
         );
 
+        H2 localMvpTitle = sectionTitle("Local MVP finish line", "local-mvp-finish-line");
+        Paragraph localMvpIntro = new Paragraph(
+                "The current goal is to make Javacup a solid local MVP: useful during development, testing and support sessions without requiring external services."
+        );
+        UnorderedList localMvpItems = new UnorderedList(
+                new ListItem("Keep JVM process discovery and local jcmd probes stable."),
+                new ListItem("Make report previews understandable without reading raw JSON first."),
+                new ListItem("Keep archived report comparison useful for before/after analysis."),
+                new ListItem("Document every diagnostic code in the internal Guide."),
+                new ListItem("Avoid large new feature branches until the local workflow feels reliable end to end.")
+        );
+
         H2 aboutTitle = sectionTitle("About Javacup", "about");
         Paragraph about = new Paragraph(
                 AppInfo.NAME + " " + AppInfo.VERSION + " — " + AppInfo.TAGLINE
@@ -174,6 +187,9 @@ public class GuideView extends VerticalLayout {
                 learnMore,
                 privacyTitle,
                 privacy,
+                localMvpTitle,
+                localMvpIntro,
+                localMvpItems,
                 aboutTitle,
                 about,
                 aboutScope,

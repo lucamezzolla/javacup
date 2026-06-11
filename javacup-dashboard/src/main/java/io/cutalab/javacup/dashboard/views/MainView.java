@@ -23,6 +23,14 @@ public class MainView extends VerticalLayout {
                 "Javacup is a local-first JVM diagnostic tool. The current milestone focuses on process discovery and lightweight JVM metrics."
         );
 
+        H2 projectStatusTitle = new H2("Project status");
+        Paragraph projectStatus = new Paragraph(
+                "Current development version: " + AppInfo.VERSION + ". The current roadmap focus is to stabilize Javacup as a practical local JVM memory diagnostic MVP."
+        );
+        Paragraph projectFocus = new Paragraph(
+                "Near-term work focuses on report readability, actionable interpretations, local-first workflows and controlled release polish."
+        );
+
         H2 currentMilestone = new H2("Current milestone");
         Paragraph stepDescription = new Paragraph(
                 "Discover local Java processes and inspect the JVM metrics of Javacup itself."
@@ -35,6 +43,16 @@ public class MainView extends VerticalLayout {
 
         HorizontalLayout actions = new HorizontalLayout(processesButton, metricsButton, samplesButton, guideButton);
 
-        add(title, tagline, description, currentMilestone, stepDescription, actions);
+        add(
+                title,
+                tagline,
+                description,
+                projectStatusTitle,
+                projectStatus,
+                projectFocus,
+                currentMilestone,
+                stepDescription,
+                actions
+        );
     }
 }

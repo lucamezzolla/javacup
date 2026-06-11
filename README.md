@@ -522,11 +522,11 @@ The `0.1.x` alpha line is considered the first local MVP line and is closed by `
 
 The latest stable 0.2.x checkpoint is `v0.2.0-alpha.3`.
 
-Current released version:
+Latest released version:
 
 - `0.2.0-alpha.3`
 
-Next development version:
+Current development version:
 
 - `0.2.0-alpha.4-SNAPSHOT`
 
@@ -565,4 +565,5 @@ After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
 - Add more actionable interpretations for archived report comparison.
 - Continue sample-based diagnostic improvements.
 - Keep the internal Guide aligned with every new diagnostic code.
-
+- Dashboard shows the current development version and roadmap focus.
+- Guide includes a Local MVP finish line section for the current stabilization phase.

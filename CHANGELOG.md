@@ -8,6 +8,20 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+## [0.2.0-alpha.4-SNAPSHOT]
+
+### Added
+
+- Dashboard shows the current development version and roadmap focus.
+- Guide includes a Local MVP finish line section for the current stabilization phase.
+
+### Planned
+
+- Stabilize the local MVP workflow.
+- Improve report preview/export polish only where needed.
+- Add more actionable archived report comparison interpretations.
+- Keep the Guide aligned with diagnostic codes and workflow changes.
+
 ## [0.2.0-alpha.3] - 2026-06-11
 
 - `v0.2.0-alpha.3` focuses on readable report previews, high-level verdicts and practical next actions.
