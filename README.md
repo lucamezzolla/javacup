@@ -567,3 +567,5 @@ After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
 - Keep the internal Guide aligned with every new diagnostic code.
 - Dashboard shows the current development version and roadmap focus.
 - Guide includes a Local MVP finish line section for the current stabilization phase.
+- Dashboard quick actions provide direct access to Guide and Archived reports.
+- `scripts/run-demo.sh` starts the demo JVM in `normal`, `heap` or `metaspace` mode.

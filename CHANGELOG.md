@@ -12,6 +12,9 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Dashboard quick actions provide direct access to Guide and Archived reports.
+- `scripts/run-demo.sh` starts the demo JVM in `normal`, `heap` or `metaspace` mode.
+
 - Dashboard shows the current development version and roadmap focus.
 - Guide includes a Local MVP finish line section for the current stabilization phase.
 
