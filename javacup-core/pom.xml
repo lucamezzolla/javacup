@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.cutalab</groupId>
         <artifactId>javacup</artifactId>
-        <version>0.2.0-alpha.4</version>
+        <version>0.3.0</version>
     </parent>
     <artifactId>javacup-core</artifactId>
     <name>Javacup Core</name>

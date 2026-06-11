@@ -517,55 +517,45 @@ Created by [Luca Mezzolla](https://github.com/lucamezzolla).
 
 
 
+
 ## Current status
 
-The `0.1.x` alpha line is considered the first local MVP line and is closed by `v0.1.0-alpha.4`.
-
-The latest stable 0.2.x checkpoint is `v0.2.0-alpha.4`.
+Javacup `0.3.0` is the local JVM Memory Diagnostic MVP checkpoint.
 
 Current released version:
 
-- `0.2.0-alpha.4`
+- `0.3.0`
 
-Next development version:
+Current release tag:
 
-- `0.2.0-alpha.5-SNAPSHOT`
+- `v0.3.0`
 
-### `v0.2.0-alpha.1`
+### What is included in the MVP
 
-First 0.2.x alpha checkpoint focused on structured JVM probe diagnostics.
+- Local Vaadin dashboard.
+- Local Java process discovery.
+- External JVM probing through local JDK diagnostic commands.
+- Structured heap and VM uptime information.
+- Probe status and probe failure diagnostics.
+- Heap, Metaspace and sample-quality diagnostics.
+- External Metrics page with Session health summary.
+- Report preview with verdict, probe summary, trend interpretation, diagnostic summary and recommended next actions.
+- JSON report download/archive.
+- Local archived report search, preview and comparison.
+- MVP verification script: `scripts/verify-mvp.sh`.
 
-### `v0.2.0-alpha.2`
+### MVP closure
 
-Second 0.2.x alpha checkpoint focused on sample-quality diagnostics, Guide alignment and archived report comparison explanations.
+The MVP is considered closed when `scripts/verify-mvp.sh` passes locally and GitHub Actions are green for `v0.3.0`.
 
-### `v0.2.0-alpha.3`
+After `v0.3.0`, avoid new features until any blocking bugs are fixed. Future work should be tracked as post-MVP improvements.
 
-Third 0.2.x alpha checkpoint focused on readable report previews, high-level verdicts and practical next actions.
+### Suggested post-MVP improvements
 
-### `v0.2.0-alpha.4`
-
-Fourth 0.2.x alpha checkpoint focused on stabilizing the local MVP workflow.
-
-Highlights:
-
-- External Metrics includes a Session health summary with verdict, probe state, sample quality, main issue and recommended action.
-- Session health verdict is visually highlighted for quick reading.
-- External Metrics includes a direct action to open Archived reports after report preview/archive.
-- MVP workflow verification script: `scripts/verify-mvp.sh`.
-- MVP workflow tests protect essential scripts and External Metrics actions.
-- Local dashboard, Java process discovery, external JVM probes, sample collection, diagnostics, report preview, JSON archive and report comparison are all part of the stabilized local workflow.
-
-### Release position
-
-`v0.2.0-alpha.4` is the current MVP stabilization checkpoint.
-
-After tagging, development can resume on `0.2.0-alpha.5-SNAPSHOT` only if needed.
-
-### Suggested finalization items after `v0.2.0-alpha.4`
-
-- Avoid large new features before the MVP closure tag.
-- Fix only blocking bugs or unclear workflow issues.
-- Run `scripts/verify-mvp.sh` before the final MVP tag.
-- Prepare a final MVP release candidate when the local workflow feels stable end to end.
+- Installer/package distribution.
+- More advanced charts and timelines.
+- Better report export formats.
+- JFR-oriented analysis.
+- More diagnostic rules.
+- Optional local persistence beyond JSON files.
 

@@ -8,6 +8,32 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-12
+
+- `v0.3.0` closes the local JVM Memory Diagnostic MVP checkpoint.
+
+### Added
+
+- Final MVP verification workflow through `scripts/verify-mvp.sh`.
+- MVP checklist in `docs/mvp-checklist.md`.
+
+### Changed
+
+- Project version aligned to `0.3.0`.
+- README status aligned with the local MVP closure.
+- MVP verification now checks version consistency, core External Metrics workflow, readable report preview, archive/compare workflow, tests and package build.
+
+### MVP scope
+
+- Local dashboard.
+- Java process discovery.
+- External JVM probes through local JDK tools.
+- Structured diagnostics.
+- Session health summary.
+- Report preview.
+- JSON report archive.
+- Archived report comparison.
+
 ## [0.2.0-alpha.4] - 2026-06-12
 
 - `v0.2.0-alpha.4` focuses on stabilizing the local MVP workflow from process discovery to diagnostics, report preview, archive and comparison.
