@@ -12,6 +12,9 @@ The format follows the spirit of [Keep a Changelog](https://keepachangelog.com/e
 
 ### Added
 
+- Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
+- `scripts/local-lab.sh` prints the recommended local workflow commands.
+
 - Dashboard quick actions provide direct access to Guide and Archived reports.
 - `scripts/run-demo.sh` starts the demo JVM in `normal`, `heap` or `metaspace` mode.
 

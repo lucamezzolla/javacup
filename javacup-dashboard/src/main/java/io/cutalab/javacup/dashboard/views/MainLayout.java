@@ -86,6 +86,7 @@ public class MainLayout extends AppLayout {
         navigation.addItem(new SideNavItem("Current JVM Metrics", CurrentJvmMetricsView.class));
         navigation.addItem(new SideNavItem("Metric Samples", MetricSamplesView.class));
         navigation.addItem(new SideNavItem("Archived reports", ArchivedReportsView.class));
+        navigation.addItem(new SideNavItem("Local Lab", LocalLabView.class));
         navigation.addItem(new SideNavItem("Guide", GuideView.class));
         navigation.addItem(new SideNavItem("Donate", DonationsView.class));
 

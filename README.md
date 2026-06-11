@@ -569,3 +569,5 @@ After tagging, development can resume on `0.2.0-alpha.4-SNAPSHOT`.
 - Guide includes a Local MVP finish line section for the current stabilization phase.
 - Dashboard quick actions provide direct access to Guide and Archived reports.
 - `scripts/run-demo.sh` starts the demo JVM in `normal`, `heap` or `metaspace` mode.
+- Local Lab page provides an in-app workflow for testing Javacup with bundled demo JVMs.
+- `scripts/local-lab.sh` prints the recommended local workflow commands.
